@@ -8,8 +8,8 @@
 
     \title Overview
 
-    With \QVSC, you can develop \l{Qt Widgets}{widget-based} and \l{Qt Quick}
-    applications for the desktop and web.
+    With \QVSC, you can develop \l [QtWidgets] {Qt Widgets}{widget-based} and
+    \l [QtQuick] {Qt Quick} applications for the desktop and web.
 
     \image vscodeext-overview.webp {Qt source code open in the VS Code editor}
 

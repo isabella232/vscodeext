@@ -19,6 +19,11 @@
 */
 
 /*!
+\externalpage https://doc.qt.io/qt-6/designer-connection-mode.html
+\title \QD's Signals and Slots Editing Mode
+*/
+
+/*!
 \externalpage https://doc.qt.io/index.html
 \title Qt Documentation
 */

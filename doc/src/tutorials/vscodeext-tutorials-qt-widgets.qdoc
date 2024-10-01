@@ -10,7 +10,7 @@
 
     \title Tutorial: Qt Widgets application
 
-    This tutorial illustrates how to use \QVSC to create a \l {Qt Widgets}
+    This tutorial illustrates how to use \QVSC to create a \l [QtWidgets] {Qt Widgets}
     application. You will need a project that you can develop further using
     VS Code and \QD.
 
@@ -202,7 +202,7 @@
 
     To have the \uicontrol OK button invoke the QDialog::accept() slot, click
     the \uicontrol {Edit Signals/Slots} toolbar button to enter
-    \l {Qt Designer's Signals and Slots Editing Mode}.
+    \l {\QD's Signals and Slots Editing Mode}.
 
     Click the \uicontrol OK button, drag the mouse cursor to an empty area of
     the form, and release the mouse button. In the
@@ -343,6 +343,4 @@
     Your application is now complete.
 
     \sa {Design widgets-based UIs}
-*/
-
 */
