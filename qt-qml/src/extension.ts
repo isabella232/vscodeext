@@ -13,6 +13,8 @@ import {
 
 import { registerColorProvider } from '@/color-provider';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
+import { registerDownloadQmllsCommand } from '@cmd/download-qmlls';
+import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update';
 import { Qmlls } from '@/qmlls';
 import { EXTENSION_ID } from '@/constants';
 import { QMLProject, createQMLProject } from '@/project';
@@ -37,6 +39,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     registerRestartQmllsCommand(),
+    registerCheckQmllsUpdateCommand(),
+    registerDownloadQmllsCommand(),
     registerColorProvider()
   );
 

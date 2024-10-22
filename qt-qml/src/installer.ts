@@ -26,27 +26,25 @@ interface Asset {
   browser_download_url: string;
 }
 
-interface AssetWithTag extends Asset {
+export interface AssetWithTag extends Asset {
   tag_name: string;
 }
 
 interface CheckResult {
   message: string;
-  assetToInstall?: AssetWithTag;
+  shouldInstall: boolean;
 }
 
 export function getExpectedQmllsPath() {
   return QmllsExePath;
 }
 
-export async function checkStatus(): Promise<CheckResult> {
-  const assetToInstall = await fetchAssetToInstall();
-
+export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
   // check installation
   if (!fs.existsSync(ReleaseJsonPath) || !fs.existsSync(QmllsExePath)) {
     return {
       message: 'Not Installed',
-      assetToInstall
+      shouldInstall: true
     };
   }
 
@@ -55,13 +53,13 @@ export async function checkStatus(): Promise<CheckResult> {
     tag_name: string;
   };
 
-  if (local.tag_name !== assetToInstall.tag_name) {
+  if (local.tag_name !== asset.tag_name) {
     return {
       message:
         'Tag mismatch, ' +
         `local = ${local.tag_name}, ` +
-        `recent = ${assetToInstall.tag_name}`,
-      assetToInstall
+        `recent = ${asset.tag_name}`,
+      shouldInstall: true
     };
   }
 
@@ -70,12 +68,13 @@ export async function checkStatus(): Promise<CheckResult> {
   if (res.status !== 0) {
     return {
       message: 'Found, but not executable',
-      assetToInstall
+      shouldInstall: true
     };
   }
 
   return {
-    message: `Up-to-date, tag = ${assetToInstall.tag_name}`
+    message: `Already Up-to-date, tag = ${asset.tag_name}`,
+    shouldInstall: false
   };
 }
 
@@ -105,7 +104,7 @@ export async function install(asset: AssetWithTag) {
   );
 }
 
-async function fetchAssetToInstall() {
+export async function fetchAssetToInstall() {
   const signal = AbortSignal.timeout(ReleaseInfoTimeout);
   const res = await fetch(ReleaseInfoUrl, { signal });
   if (!res.ok) {

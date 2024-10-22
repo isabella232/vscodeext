@@ -34,6 +34,43 @@ interface QmllsExeConfig {
   qtVersion: string;
 }
 
+export enum DecisionCode {
+  NeedToUpdate,
+  AlreadyUpToDate,
+  UserDeclined,
+  ErrorOccured
+}
+
+export async function fetchAssetAndDecide(options?: {
+  doNotAsk: true;
+}): Promise<{
+  code: DecisionCode;
+  asset?: installer.AssetWithTag;
+}> {
+  try {
+    logger.info('Fetching release information');
+    const asset = await installer.fetchAssetToInstall();
+    const status = installer.checkStatusAgainst(asset);
+    logger.info('Status Check: ', status.message);
+
+    if (!status.shouldInstall) {
+      return { code: DecisionCode.AlreadyUpToDate, asset };
+    }
+
+    if (options?.doNotAsk !== true) {
+      if (!(await installer.getUserConsent())) {
+        logger.info('User declined to install qmlls');
+        return { code: DecisionCode.UserDeclined };
+      }
+    }
+
+    return { code: DecisionCode.NeedToUpdate, asset };
+  } catch (error) {
+    logger.warn(isError(error) ? error.message : String(error));
+    return { code: DecisionCode.ErrorOccured };
+  }
+}
+
 export class Qmlls {
   private _client: LanguageClient | undefined;
   private _channel: vscode.OutputChannel | undefined;
@@ -49,25 +86,31 @@ export class Qmlls {
     });
   }
 
-  public async start() {
+  public async install(
+    asset: installer.AssetWithTag,
+    options?: { restart: true }
+  ) {
     try {
-      const r = await installer.checkStatus();
-      logger.info('Status Check: ', r.message);
-
-      if (r.assetToInstall) {
-        if (!(await installer.getUserConsent())) {
-          throw new Error('User declined to install qmlls');
-        }
-
-        logger.info(
-          `Installing: ${r.assetToInstall.name}, ${r.assetToInstall.tag_name}`
-        );
-
-        await installer.install(r.assetToInstall);
-        logger.info('Installation done');
+      if (options?.restart) {
+        await this.stop();
       }
+
+      logger.info(`Installing: ${asset.name}, ${asset.tag_name}`);
+      await installer.install(asset);
+      logger.info('Installation done');
     } catch (error) {
       logger.warn(isError(error) ? error.message : String(error));
+    }
+
+    if (options?.restart) {
+      void this.startQmlls();
+    }
+  }
+
+  public async start() {
+    const result = await fetchAssetAndDecide();
+    if (result.code === DecisionCode.NeedToUpdate && result.asset) {
+      await this.install(result.asset);
     }
 
     await this.startQmlls();

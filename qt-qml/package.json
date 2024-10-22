@@ -39,6 +39,16 @@
         "command": "qt-qml.restartQmlls",
         "title": "%qt-qml.command.restartQmlls.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-qml.checkQmllsUpdate",
+        "title": "%qt-qml.command.checkQmllsUpdate.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-qml.downloadQmlls",
+        "title": "%qt-qml.command.downloadQmlls.title%",
+        "category": "Qt"
       }
     ],
     "languages": [

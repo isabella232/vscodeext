@@ -1,3 +1,5 @@
 {
-  "qt-qml.command.restartQmlls.title": "Restart QML Language Server"
+  "qt-qml.command.restartQmlls.title": "Restart QML language server",
+  "qt-qml.command.checkQmllsUpdate.title": "Check for QML language server update",
+  "qt-qml.command.downloadQmlls.title": "Download the most recent QML language server"
 }

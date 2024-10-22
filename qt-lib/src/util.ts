@@ -241,3 +241,24 @@ export function inVCPKGRoot(p: string) {
 export function getVCPKGRoot() {
   return process.env.VCPKG_ROOT;
 }
+
+export function showAutoDismissNotification(
+  title: string,
+  message: string,
+  ms: number = 5 * 1000
+) {
+  return vscode.window.withProgress(
+    {
+      title,
+      location: vscode.ProgressLocation.Notification,
+      cancellable: false
+    },
+
+    async (progress) => {
+      return new Promise<void>((resolve) => {
+        progress.report({ increment: 100, message });
+        setTimeout(resolve, ms);
+      });
+    }
+  );
+}
