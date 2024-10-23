@@ -34,7 +34,7 @@ import {
   qmlImportPathCommand
 } from '@cmd/launch-variables';
 import { createCppProject, CppProjectManager, CppProject } from '@/project';
-import { KitManager } from '@/kit-manager';
+import { KitManager, tryToUseCMakeFromQtTools } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { EXTENSION_ID } from '@/constants';
 
@@ -86,6 +86,7 @@ export async function activate(context: vscode.ExtensionContext) {
     logger.info('Received config change:', message.config as unknown as string);
     processMessage(message);
   });
+  void tryToUseCMakeFromQtTools();
   await kitManager.checkForAllQtInstallations();
 
   await initCoreValues();

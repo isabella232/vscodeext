@@ -65,6 +65,17 @@
   "main": "./out/extension.js",
   "l10n": "./l10n",
   "contributes": {
+    "configuration": {
+      "title": "Qt C++ Configuration",
+      "properties": {
+        "qt-cpp.doNotAskForCMakePath": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Do not ask for setting [`#cmake.cmakePath#`](https://vector-of-bool.github.io/docs/vscode-cmake-tools/settings.html#cmake-cmakepath).\n\nCMake Tools search the PATH environment variable, and make some \n\neducated guesses on where to find CMake.",
+          "scope": "machine"
+        }
+      }
+    },
     "commands": [
       {
         "command": "qt-cpp.scanForQtKits",

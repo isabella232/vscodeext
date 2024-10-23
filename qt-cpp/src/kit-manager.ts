@@ -28,6 +28,7 @@ import { CppProject } from '@/project';
 import { coreAPI } from '@/extension';
 import { GlobalStateManager } from '@/state';
 import { IsQtKit } from '@cmd/register-qt-path';
+import { EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('kit-manager');
 
@@ -243,6 +244,10 @@ export class KitManager {
     qtInsRoot: string,
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
+    // Set only for the global workspace
+    if (!workspaceFolder && qtInsRoot) {
+      void tryToUseCMakeFromQtTools();
+    }
     const qtInstallations = await findQtKits(qtInsRoot);
     if (qtInsRoot) {
       KitManager.showQtInstallationsMessage(qtInsRoot, qtInstallations);
@@ -825,5 +830,67 @@ export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
       GlobalWorkspace,
       AdditionalQtPathsName
     ) ?? []
+  );
+}
+
+export async function tryToUseCMakeFromQtTools() {
+  if (getDoNotAskForCMakePath()) {
+    logger.info('doNotAskForCMakePath is set');
+    return;
+  }
+  // check if cmake.cmakePath is set
+  const cmakePathConfig = 'cmakePath';
+  const cmakeConfig = vscode.workspace.getConfiguration('cmake');
+
+  const IsCustomCmakePath =
+    cmakeConfig.get<string>(cmakePathConfig) !== 'cmake';
+  if (IsCustomCmakePath || commandExists.sync('cmake')) {
+    return;
+  }
+
+  const cmakeExePath = await qtPath.locateCMakeExecutable(
+    getCurrentGlobalQtInstallationRoot()
+  );
+  if (!cmakeExePath) {
+    return;
+  }
+  const setCMakePath = () => {
+    logger.info(`Setting cmakePath to ${cmakeExePath}`);
+    void cmakeConfig.update(
+      cmakePathConfig,
+      cmakeExePath,
+      vscode.ConfigurationTarget.Global
+    );
+  };
+  // Ask users if they want to set cmakePath to the cmake executable found in Qt installation
+  const message = `CMake executable found in Qt installation: "${cmakeExePath}"`;
+  logger.info(message);
+  const use = 'Use';
+  void vscode.window
+    .showInformationMessage(
+      `${message}, would you like to use it?`,
+      use,
+      'Do not ask again'
+    )
+    .then((selection) => {
+      if (selection === use) {
+        setCMakePath();
+      } else if (selection === 'Do not ask again') {
+        void setDoNotAskForCMakePath(true);
+      }
+    });
+}
+
+async function setDoNotAskForCMakePath(value: boolean) {
+  await vscode.workspace
+    .getConfiguration(EXTENSION_ID)
+    .update('doNotAskForCMakePath', value, vscode.ConfigurationTarget.Global);
+}
+
+function getDoNotAskForCMakePath(): boolean {
+  return (
+    vscode.workspace
+      .getConfiguration(EXTENSION_ID)
+      .get<boolean>('doNotAskForCMakePath') ?? false
   );
 }

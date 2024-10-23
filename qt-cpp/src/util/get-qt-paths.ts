@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 
 import * as fsutil from '@util/fs';
-import { OSExeSuffix } from 'qt-lib';
+import { OSExeSuffix, IsMacOS } from 'qt-lib';
 
 const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
 const NinjaFileName = 'ninja' + OSExeSuffix;
@@ -115,4 +115,19 @@ export async function locateCMakeQtToolchainFile(installation: string) {
   }
 
   return '';
+}
+
+export async function locateCMakeExecutable(rootIns: string) {
+  const cmakeExePath = path.join(
+    rootIns,
+    `Tools`,
+    'CMake',
+    IsMacOS ? path.join('CMake.app', 'Contents') : '',
+    'bin',
+    `cmake${OSExeSuffix}`
+  );
+  if (await fsutil.exists(cmakeExePath)) {
+    return cmakeExePath;
+  }
+  return undefined;
 }
