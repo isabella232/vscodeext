@@ -66,12 +66,11 @@ async function main() {
       `${nameWithoutVersionAndPublisher} ${version} - ${license.licenses}\n`
     );
     append(`${license.repository}#readme\n\n`);
-    const licenseFilePath = path.resolve(
-      targetExtensionRoot,
-      license.licenseFile
-    );
-    const licenseFileName = path.basename(licenseFilePath);
-    if (licenseFileName.toLowerCase() !== 'license') {
+
+    if (
+      !license.licenseFile ||
+      !license.licenseFile.toLocaleLowerCase().includes('license')
+    ) {
       const possibleLicenseFileNames = [
         'license',
         'license.md',
@@ -79,7 +78,8 @@ async function main() {
         'LICENSE',
         'LICENSE.md',
         'LICENSE.txt',
-        'License.txt'
+        'License.txt',
+        'LICENSE.TXT'
       ];
       const repo = license.repository.replace(
         'github.com',
@@ -101,10 +101,10 @@ async function main() {
         }
       }
       if (!found) {
-        throw new Error(`Could not find license file for ${name}`);
+        throw new Error(`Could not find license file for ${name} in ${repo}`);
       }
     } else {
-      const licenseFile = fs.readFileSync(licenseFilePath, 'utf-8');
+      const licenseFile = fs.readFileSync(license.licenseFile, 'utf-8');
       appendLicense(licenseFile);
     }
     append('\n---------------------------------------------------------\n');
