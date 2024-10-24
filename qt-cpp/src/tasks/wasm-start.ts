@@ -1,6 +1,7 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import { telemetry } from 'qt-lib';
 import * as vscode from 'vscode';
 
 interface WASMStartTaskDefinition extends vscode.TaskDefinition {
@@ -55,6 +56,7 @@ export class WASMStartTaskProvider implements vscode.TaskProvider {
             .showInformationMessage(message, 'Install')
             .then((selection) => {
               if (selection === 'Install') {
+                telemetry.sendAction('wasm.start.installExtension');
                 const action = 'workbench.extensions.installExtension';
                 const extensionName = extensionId;
                 void vscode.commands.executeCommand(action, extensionName);

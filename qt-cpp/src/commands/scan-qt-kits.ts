@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { IsWindows } from 'qt-lib';
+import { IsWindows, telemetry } from 'qt-lib';
 import { kitManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
 
@@ -11,6 +11,7 @@ export function registerScanForQtKitsCommand() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.scanForQtKits`,
     async () => {
+      telemetry.sendAction('scanForQtKits');
       if (IsWindows) {
         await vscode.commands.executeCommand('cmake.scanForKits');
       }

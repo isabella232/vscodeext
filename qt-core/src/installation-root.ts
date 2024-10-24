@@ -16,7 +16,8 @@ import {
   isPathToQtPathsOrQMake,
   QtWorkspaceConfigMessage,
   QtAdditionalPath,
-  IsMacOS
+  IsMacOS,
+  telemetry
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
@@ -141,8 +142,10 @@ export function checkDefaultQtInsRootPath() {
     )
     .then((response) => {
       if (response === setDefaultPathButtonMessage) {
+        telemetry.sendConfig('useDefaultQtInstallationRoot');
         void setGlobalQtInstallationRoot(foundDefaultPath);
       } else if (response === doNotShowAgainButtonMessage) {
+        telemetry.sendConfig('doNotAskForDefaultQtInstallationRoot');
         void setDoNotAskForDefaultQtInstallationRoot(true);
       }
     });

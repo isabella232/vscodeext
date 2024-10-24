@@ -5,8 +5,10 @@ import * as vscode from 'vscode';
 
 import { kitManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
+import { telemetry } from 'qt-lib';
 
 export async function reset() {
+  telemetry.sendAction('reset');
   await kitManager.reset();
 }
 

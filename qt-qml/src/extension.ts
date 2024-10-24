@@ -8,7 +8,8 @@ import {
   getCoreApi,
   createLogger,
   initLogger,
-  ProjectManager
+  ProjectManager,
+  telemetry
 } from 'qt-lib';
 
 import { registerColorProvider } from '@/color-provider';
@@ -27,6 +28,7 @@ const logger = createLogger('extension');
 
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
+  telemetry.activate(context);
   projectManager = new ProjectManager(context, createQMLProject);
   coreAPI = await getCoreApi();
 
@@ -43,6 +45,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerDownloadQmllsCommand(),
     registerColorProvider()
   );
+  telemetry.sendEvent(`activated`);
 
   qmlls = new Qmlls();
   void qmlls.start();
@@ -50,6 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
+  telemetry.dispose();
   projectManager.dispose();
   void qmlls.stop();
 }

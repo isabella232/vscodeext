@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { isMultiWorkspace } from 'qt-lib';
+import { isMultiWorkspace, telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 
 interface RecommendedSetting {
@@ -13,6 +13,7 @@ interface RecommendedSetting {
 }
 
 export function registerSetRecommendedSettingsCommand() {
+  telemetry.sendAction('setRecommendedSettings');
   const recommendedSettings: RecommendedSetting[] = [
     {
       extensionId: 'cmake',

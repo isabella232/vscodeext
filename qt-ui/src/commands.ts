@@ -9,7 +9,8 @@ import {
   findQtKits,
   createLogger,
   GlobalWorkspace,
-  CORE_EXTENSION_ID
+  CORE_EXTENSION_ID,
+  telemetry
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
 import { locateDesigner } from '@/util';
@@ -17,6 +18,7 @@ import { locateDesigner } from '@/util';
 const logger = createLogger('commands');
 
 export async function openWidgetDesigner() {
+  telemetry.sendAction('openWidgetDesigner');
   logger.info('Opening Qt Designer');
   // Find the latest Qt installation in both global and project settings
   // and run the designer

@@ -4,3 +4,4 @@ export * from './util';
 export * from './core-api';
 export * from './constants';
 export * from './state';
+export * from './telemetry';

@@ -9,7 +9,8 @@ import {
   initLogger,
   QtInsRootConfigName,
   AdditionalQtPathsName,
-  QtWorkspaceConfigMessage
+  QtWorkspaceConfigMessage,
+  telemetry
 } from 'qt-lib';
 import { CoreAPIImpl } from '@/api';
 import { registerDocumentationCommands } from '@/online-docs';
@@ -33,6 +34,7 @@ export let projectManager: CoreProjectManager;
 
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
+  telemetry.activate(context);
   logger.info(`Activating ${context.extension.id}`);
   projectManager = new CoreProjectManager(context);
   if (vscode.workspace.workspaceFile !== undefined) {
@@ -50,6 +52,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(registerQtByQtpaths());
   context.subscriptions.push(
     vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
+      telemetry.sendAction('openSettings');
       void vscode.commands.executeCommand(
         'workbench.action.openSettings',
         `@ext:theqtcompany.qt-cpp @ext:theqtcompany.qt-qml @ext:theqtcompany.qt-ui @ext:theqtcompany.${EXTENSION_ID}`
@@ -59,6 +62,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(`${EXTENSION_ID}.registerQt`, registerQt)
   );
+  telemetry.sendEvent(`activated`);
 
   checkDefaultQtInsRootPath();
   checkVcpkg();
@@ -69,6 +73,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
+  telemetry.dispose();
 }
 
 export function initCoreValues() {

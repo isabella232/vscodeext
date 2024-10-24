@@ -8,6 +8,7 @@ import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 
 import { QtInfo } from './core-api';
+import { telemetry } from './telemetry';
 
 export const Home = os.homedir();
 export const IsWindows = process.platform === 'win32';
@@ -54,6 +55,7 @@ export function askForKitSelection() {
     )
     .then((selection) => {
       if (selection === 'Select CMake Kit') {
+        telemetry.sendAction('selectCMakeKit');
         void vscode.commands.executeCommand('cmake.selectKit');
       }
     });

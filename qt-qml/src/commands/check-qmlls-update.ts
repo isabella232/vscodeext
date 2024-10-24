@@ -6,12 +6,13 @@ import * as vscode from 'vscode';
 import { EXTENSION_ID } from '@/constants';
 import { DecisionCode, fetchAssetAndDecide } from '@/qmlls';
 import { qmlls } from '@/extension';
-import { showAutoDismissNotification } from 'qt-lib';
+import { showAutoDismissNotification, telemetry } from 'qt-lib';
 
 export function registerCheckQmllsUpdateCommand() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.checkQmllsUpdate`,
     async () => {
+      telemetry.sendAction('checkQmllsUpdate');
       const decision = await fetchAssetAndDecide();
 
       switch (decision.code) {

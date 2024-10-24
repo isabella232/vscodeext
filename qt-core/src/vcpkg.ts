@@ -14,7 +14,8 @@ import {
   QtAdditionalPath,
   getVCPKGRoot,
   IsArm64,
-  Isx64
+  Isx64,
+  telemetry
 } from 'qt-lib';
 import { getQueryOutput } from '@/util';
 import { getCurrentGlobalAdditionalQtPaths } from '@/installation-root';
@@ -52,9 +53,11 @@ export function checkVcpkg() {
       .showInformationMessage(message, action, doNotShowAgain)
       .then((value) => {
         if (value === action) {
+          telemetry.sendConfig('useVCPKG');
           logger.info('Adding Qt path to settings');
           addQtPathToSettings({ path: qtPath, isVCPKG: true });
         } else if (value === doNotShowAgain) {
+          telemetry.sendConfig('doNotAskForVCPKG');
           void setDoNotAskForVCPKG(true);
           logger.info('setting doNotAskForVCPKG to true');
         }

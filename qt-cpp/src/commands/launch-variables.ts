@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-import { inVCPKGRoot, createLogger } from 'qt-lib';
+import { inVCPKGRoot, createLogger, telemetry } from 'qt-lib';
 import { getFilenameWithoutExtension } from '@util/util';
 import { EXTENSION_ID } from '@/constants';
 import { getQtInsRoot, getSelectedKit } from '@cmd/register-qt-path';
@@ -16,6 +16,7 @@ export function registerlaunchTargetFilenameWithoutExtension() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.launchTargetFilenameWithoutExtension`,
     async () => {
+      telemetry.sendAction('launchTargetFilenameWithoutExtension');
       const launchTargetFilename = await vscode.commands.executeCommand<string>(
         'cmake.launchTargetFilename'
       );
@@ -31,6 +32,7 @@ export function registerbuildDirectoryName() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.buildDirectoryName`,
     async () => {
+      telemetry.sendAction('buildDirectoryName');
       const activeFolder = await vscode.commands.executeCommand<string>(
         'cmake.activeFolderPath'
       );
@@ -45,6 +47,7 @@ export function registerbuildDirectoryName() {
 
 export function qtDirCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.qtDir`, async () => {
+    telemetry.sendAction('qtDir');
     const kit = await getSelectedKit();
     if (!kit) {
       return undefined;
@@ -105,6 +108,7 @@ export function registerKitDirectoryCommand() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.kitDirectory`,
     async () => {
+      telemetry.sendAction('kitDirectory');
       const kit = await getSelectedKit();
       if (!kit) {
         return undefined;
@@ -124,6 +128,7 @@ export function qpaPlatformPluginPathCommand() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.QT_QPA_PLATFORM_PLUGIN_PATH`,
     async () => {
+      telemetry.sendAction('QT_QPA_PLATFORM_PLUGIN_PATH');
       const kit = await getSelectedKit();
       if (kit?.environmentVariables?.VSCODE_QT_QTPATHS_EXE) {
         if (kit.toolchainFile && inVCPKGRoot(kit.toolchainFile)) {
@@ -165,6 +170,7 @@ export function qmlImportPathCommand() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.QML_IMPORT_PATH`,
     async () => {
+      telemetry.sendAction('QML_IMPORT_PATH');
       const kit = await getSelectedKit();
       if (kit?.environmentVariables?.VSCODE_QT_QTPATHS_EXE) {
         if (kit.toolchainFile && inVCPKGRoot(kit.toolchainFile)) {

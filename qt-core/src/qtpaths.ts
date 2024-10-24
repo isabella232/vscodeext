@@ -8,7 +8,8 @@ import {
   createLogger,
   generateDefaultQtPathsName,
   GlobalWorkspace,
-  QtAdditionalPath
+  QtAdditionalPath,
+  telemetry
 } from 'qt-lib';
 import { convertAdditionalQtPaths, getConfiguration } from '@/util';
 import { onAdditionalQtPathsUpdated } from '@/installation-root';
@@ -21,6 +22,7 @@ export function registerQtByQtpaths() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.registerQtByQtpaths`,
     () => {
+      telemetry.sendAction('registerQtByQtpaths');
       const options: vscode.OpenDialogOptions = {
         canSelectMany: false,
         openLabel: 'Select',

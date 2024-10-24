@@ -11,7 +11,7 @@ import {
   getSelectedKit,
   IsQtKit
 } from '@cmd/register-qt-path';
-import { createLogger } from 'qt-lib';
+import { createLogger, telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
 
@@ -50,6 +50,7 @@ export function registerNatvisCommand() {
   const natvisDisposal = vscode.commands.registerCommand(
     `${EXTENSION_ID}.natvis`,
     async () => {
+      telemetry.sendAction('natvis');
       const kit = await getSelectedKit();
       if (!kit || !IsQtKit(kit)) {
         const error = `${kit?.name} is not a Qt kit`;
@@ -72,12 +73,14 @@ export function registerNatvisCommand() {
   const natvis5Disposal = vscode.commands.registerCommand(
     `${EXTENSION_ID}.natvis5`,
     () => {
+      telemetry.sendAction('natvis5');
       return getNatvis('5');
     }
   );
   const natvis6Disposal = vscode.commands.registerCommand(
     `${EXTENSION_ID}.natvis6`,
     () => {
+      telemetry.sendAction('natvis6');
       return getNatvis('6');
     }
   );

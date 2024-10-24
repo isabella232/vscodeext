@@ -4,6 +4,7 @@
 import * as vscode from 'vscode';
 
 import { EXTENSION_ID } from '@/constants';
+import { telemetry } from 'qt-lib';
 
 interface SearchItem {
   link: string;
@@ -68,6 +69,7 @@ function openInBrowser(url: string) {
 }
 
 async function search() {
+  telemetry.sendAction('documentationSearchManually');
   const hintWord = getCurrentWord();
   const value = await vscode.window.showInputBox({
     value: hintWord,
@@ -140,10 +142,12 @@ function searchAndAskforResult(value: string) {
 }
 
 function openHomepage() {
+  telemetry.sendAction('documentationHomepage');
   openInBrowser('https://doc.qt.io');
 }
 
 function searchForCurrentWord() {
+  telemetry.sendAction('documentationSearchForCurrentWord');
   const word = getCurrentWord();
   if (word === '') {
     void vscode.window.showInformationMessage('No word found at the cursor.');

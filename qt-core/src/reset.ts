@@ -5,9 +5,11 @@ import * as vscode from 'vscode';
 
 import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
+import { telemetry } from 'qt-lib';
 
 export function resetCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.reset`, () => {
+    telemetry.sendAction('reset');
     coreAPI?.reset();
     projectManager.reset();
     const extensions = ['qt-cpp', 'qt-qml', 'qt-ui'];

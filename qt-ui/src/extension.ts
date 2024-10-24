@@ -10,7 +10,8 @@ import {
   QtWorkspaceType,
   ProjectManager,
   createLogger,
-  initLogger
+  initLogger,
+  telemetry
 } from 'qt-lib';
 import { UIEditorProvider } from '@/editors/ui/ui-editor';
 import { createUIProject, UIProject } from '@/project';
@@ -26,6 +27,7 @@ export let coreAPI: CoreAPI | undefined;
 
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
+  telemetry.activate(context);
   logger.info(`Activating ${context.extension.id}`);
   coreAPI = await getCoreApi();
   if (!coreAPI) {
@@ -86,10 +88,12 @@ export async function activate(context: vscode.ExtensionContext) {
       openWidgetDesigner
     )
   );
+  telemetry.sendEvent(`activated`);
 }
 
 export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
+  telemetry.dispose();
 }
 
 function processMessage(message: QtWorkspaceConfigMessage) {

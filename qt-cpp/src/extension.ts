@@ -13,7 +13,8 @@ import {
   QtInsRootConfigName,
   AdditionalQtPathsName,
   GlobalWorkspace,
-  QtAdditionalPath
+  QtAdditionalPath,
+  telemetry
 } from 'qt-lib';
 import {
   getQtInsRoot,
@@ -49,6 +50,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.extensions.getExtension('ms-vscode.cmake-tools')?.activate();
 
   initLogger(EXTENSION_ID);
+  telemetry.activate(context);
   kitManager = new KitManager(context);
   projectManager = new CppProjectManager(context);
   coreAPI = await getCoreApi();
@@ -73,6 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerlaunchTargetFilenameWithoutExtension(),
     registerbuildDirectoryName()
   );
+  telemetry.sendEvent(`activated`);
 
   taskProvider = vscode.tasks.registerTaskProvider(
     WASMStartTaskProvider.WASMStartType,
@@ -91,6 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
+  telemetry.dispose();
   projectManager.dispose();
   if (taskProvider) {
     taskProvider.dispose();
