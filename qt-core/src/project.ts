@@ -3,12 +3,12 @@
 
 import * as vscode from 'vscode';
 import untildify from 'untildify';
+import { isEqual } from 'lodash';
 
 import {
   AdditionalQtPathsName,
   createLogger,
   GlobalWorkspace,
-  isEqualArrays,
   QtInsRootConfigName,
   QtAdditionalPath,
   compareQtAdditionalPath
@@ -80,10 +80,9 @@ export class CoreProject implements Project {
             this.stateManager.getAdditionalQtPaths();
           const currentAdditionalQtPaths =
             CoreProjectManager.getWorkspaceFolderAdditionalQtPaths(folder);
-          // TODO: Implement generic array comparison function
 
           if (
-            !isEqualArrays(
+            !isEqual(
               currentAdditionalQtPaths.sort(),
               previousAdditionalQtPaths.sort()
             )
@@ -134,7 +133,7 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
             this.globalStateManager.getAdditionalQtPaths();
           const currentAdditionalQtPaths = getCurrentGlobalAdditionalQtPaths();
           if (
-            !isEqualArrays(
+            !isEqual(
               currentAdditionalQtPaths.sort(compareQtAdditionalPath),
               previousAdditionalQtPaths.sort(compareQtAdditionalPath)
             )

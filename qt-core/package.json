@@ -197,6 +197,7 @@
   },
   "devDependencies": {
     "@types/command-exists": "^1.2.3",
+    "@types/lodash": "^4.17.12",
     "@types/node": "^20.2.5",
     "@types/vscode": "^1.78.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
@@ -211,6 +212,7 @@
   },
   "dependencies": {
     "command-exists": "^1.2.9",
+    "lodash": "^4.17.21",
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
     "typescript": "^5.2.2",
