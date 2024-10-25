@@ -13,7 +13,7 @@
     "lint": "npm run prettierWrite && eslint . --fix --cache",
     "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,json,mjs,cjs}\"",
-    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\""
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata"
   },
   "devDependencies": {
     "@types/node": "^20.2.5",
