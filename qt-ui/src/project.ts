@@ -8,7 +8,12 @@ import untildify from 'untildify';
 import { DesignerClient } from '@/designer-client';
 import { DesignerServer } from '@/designer-server';
 import { createLogger, QtWorkspaceType, Project } from 'qt-lib';
-import { getConfig, affectsConfig, locateQtDesignerExePath } from '@/util';
+import {
+  getConfig,
+  affectsConfig,
+  locateDesigner,
+  locateDesignerFromQtPaths
+} from '@/util';
 import { CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH } from '@/constants';
 
 const logger = createLogger('project');
@@ -25,6 +30,7 @@ export class UIProject implements Project {
   private _workspaceType: QtWorkspaceType | undefined;
   private _binDir: string | undefined;
   private _designerClient: DesignerClient | undefined;
+  private _qtpathsExe: string | undefined;
   private readonly _designerServer: DesignerServer;
   private _customWidgetsDesignerExePath: string | undefined;
   public constructor(
@@ -40,7 +46,7 @@ export class UIProject implements Project {
       if (
         UIProject.checkCustomDesignerExePath(this._customWidgetsDesignerExePath)
       ) {
-        this._designerClient = new DesignerClient(
+        this.designerClient = new DesignerClient(
           this._customWidgetsDesignerExePath,
           this._designerServer.getPort()
         );
@@ -65,8 +71,7 @@ export class UIProject implements Project {
             this._customWidgetsDesignerExePath
           )
         ) {
-          this._designerClient?.detach();
-          this._designerClient = new DesignerClient(
+          this.designerClient = new DesignerClient(
             this._customWidgetsDesignerExePath,
             this._designerServer.getPort()
           );
@@ -74,8 +79,7 @@ export class UIProject implements Project {
           // That means the user has removed the path.
           // So, we need to detach the client.
           if (this._designerClient) {
-            this._designerClient.detach();
-            this._designerClient = new DesignerClient(
+            this.designerClient = new DesignerClient(
               this.getQtCustomDesignerPath(),
               this._designerServer.getPort()
             );
@@ -91,8 +95,12 @@ export class UIProject implements Project {
   }
 
   private async getNewDesignerClient(binDir: string) {
+    const designerExe = await locateDesigner(binDir);
+    if (!designerExe) {
+      return undefined;
+    }
     const designerClient = new DesignerClient(
-      await locateQtDesignerExePath(binDir),
+      designerExe,
       this.designerServer.getPort()
     );
     return designerClient;
@@ -107,15 +115,36 @@ export class UIProject implements Project {
   get binDir() {
     return this._binDir;
   }
+
+  get qtpathsExe() {
+    return this._qtpathsExe;
+  }
+
+  set qtpathsExe(qtpathsExe: string | undefined) {
+    const setDesignerClient = (designer: string | undefined) => {
+      if (designer) {
+        this.designerClient = new DesignerClient(
+          designer,
+          this.designerServer.getPort()
+        );
+      }
+    };
+    if (qtpathsExe) {
+      void locateDesignerFromQtPaths(qtpathsExe).then(setDesignerClient);
+    } else {
+      this.designerClient = undefined;
+    }
+    this._qtpathsExe = qtpathsExe;
+  }
+
   async setBinDir(binDir: string | undefined) {
-    if (binDir !== this._binDir && binDir !== undefined) {
+    if (binDir !== this._binDir) {
       if (!this._customWidgetsDesignerExePath) {
         this._binDir = binDir;
-        this._designerClient?.detach();
-        if (this.binDir) {
-          this._designerClient = await this.getNewDesignerClient(binDir);
+        if (binDir) {
+          this.designerClient = await this.getNewDesignerClient(binDir);
         } else {
-          this._designerClient = undefined;
+          this.designerClient = undefined;
         }
       }
     }
@@ -127,6 +156,7 @@ export class UIProject implements Project {
     return this._designerClient;
   }
   set designerClient(client: DesignerClient | undefined) {
+    this._designerClient?.detach();
     this._designerClient = client;
   }
   get folder() {

@@ -47,7 +47,9 @@ export class DesignerClient {
         });
     }
   }
-
+  get exe() {
+    return this.designerExePath;
+  }
   public isRunning() {
     return this.process !== undefined;
   }

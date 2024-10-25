@@ -8,7 +8,11 @@ import { WorkspaceStateManager } from '@/state';
 import { coreAPI, kitManager } from '@/extension';
 import { createLogger, QtWorkspaceConfigMessage } from 'qt-lib';
 import { Project, ProjectManager } from 'qt-lib';
-import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
+import {
+  getQtInsRoot,
+  getQtPathsExe,
+  getSelectedKit
+} from '@cmd/register-qt-path';
 
 const logger = createLogger('project');
 
@@ -41,17 +45,13 @@ export class CppProject implements Project {
       this._cmakeProject.onSelectedConfigurationChanged(
         async (configurationType: cmakeApi.ConfigurationType) => {
           if (configurationType === cmakeApi.ConfigurationType.Kit) {
-            let selectedCMakeKit =
-              await vscode.commands.executeCommand<string>('cmake.buildKit');
-            logger.info('Selected kit:', selectedCMakeKit);
-            if (selectedCMakeKit === '__unspec__') {
-              selectedCMakeKit = '';
-            }
-            const selectedKitPath = await getSelectedQtInstallationPath(
-              this.folder
-            );
+            const kit = await getSelectedKit(this.folder);
+            const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
             const message = new QtWorkspaceConfigMessage(this.folder);
             message.config.set('selectedKitPath', selectedKitPath);
+
+            const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
+            message.config.set('selectedQtPaths', selectedQtPaths);
             coreAPI?.update(message);
           }
         }

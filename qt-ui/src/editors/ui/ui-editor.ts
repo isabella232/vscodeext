@@ -54,7 +54,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
             throw new Error('Designer client not found');
           }
           if (!designerClient.isRunning()) {
-            logger.info('Starting designer client');
+            logger.info(`Starting designer client:${designerClient.exe}`);
             designerServer.closeClient();
             designerClient.start(designerServer.getPort());
           }

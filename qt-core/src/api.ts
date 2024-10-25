@@ -29,7 +29,7 @@ export class CoreAPIImpl implements CoreAPI {
   >();
   private readonly _onValueChanged =
     new vscode.EventEmitter<QtWorkspaceConfigMessage>();
-  private readonly _qtInfoCache = new Map<QtAdditionalPath, QtInfo>();
+  private readonly _qtInfoCache = new Map<string, QtInfo>();
 
   public get onValueChanged() {
     return this._onValueChanged.event;
@@ -126,10 +126,19 @@ export class CoreAPIImpl implements CoreAPI {
   reset() {
     this._qtInfoCache.clear();
   }
-
+  // The below function is used to obtain QtInfo from the path of the qtPaths
+  // executable because we don't store the full `QtAdditionalPath` object in the
+  // kit configuration. So, we should be able to obtain the QtInfo from the path
+  // directly. `getQtInfoFromPath` might lose some information like the name of
+  // the kit, and whether it is a VCPKG kit or not.
+  getQtInfoFromPath(qtPathsExe: string): QtInfo | undefined {
+    return this.getQtInfo({ path: qtPathsExe });
+  }
   getQtInfo(qtAdditionalPath: QtAdditionalPath): QtInfo | undefined {
-    let result = this._qtInfoCache.get(qtAdditionalPath);
+    let result = this._qtInfoCache.get(qtAdditionalPath.path);
     if (result) {
+      result.name = qtAdditionalPath.name;
+      result.isVCPKG = qtAdditionalPath.isVCPKG;
       return result;
     }
 
@@ -195,7 +204,7 @@ export class CoreAPIImpl implements CoreAPI {
       result.set('MSVC_MINOR_VERSION', msvcVersion.minor.toString());
       result.set('MSVC_PATCH_VERSION', msvcVersion.patch.toString());
     }
-    this._qtInfoCache.set(qtAdditionalPath, result);
+    this._qtInfoCache.set(qtAdditionalPath.path, result);
     return result;
   }
 }

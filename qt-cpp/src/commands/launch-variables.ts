@@ -4,8 +4,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
+import { inVCPKGRoot, createLogger } from 'qt-lib';
 import { getFilenameWithoutExtension } from '@util/util';
 import { EXTENSION_ID } from '@/constants';
+import { getSelectedKit } from '@cmd/register-qt-path';
+import { coreAPI } from '@/extension';
+
+const logger = createLogger('launch-variables');
 
 export function registerlaunchTargetFilenameWithoutExtension() {
   return vscode.commands.registerCommand(
@@ -34,6 +39,116 @@ export function registerbuildDirectoryName() {
         activeFolder
       );
       return path.basename(buildDirectory);
+    }
+  );
+}
+
+export function qtDirCommand() {
+  return vscode.commands.registerCommand(`${EXTENSION_ID}.qtDir`, async () => {
+    const kit = await getSelectedKit();
+    const insRoot = kit?.environmentVariables?.VSCODE_QT_INSTALLATION;
+    if (insRoot) {
+      return path.join(insRoot, 'bin');
+    }
+    const pathsExe = kit?.environmentVariables?.VSCODE_QT_QTPATHS_EXE;
+    if (pathsExe) {
+      const isValidKey = (key: string) => {
+        const keysShouldStartWith = ['QT_INSTALL', 'QT_HOST'];
+        for (const k of keysShouldStartWith) {
+          if (key.startsWith(k)) {
+            return true;
+          }
+        }
+        return false;
+      };
+      const info = coreAPI?.getQtInfoFromPath(pathsExe);
+      const paths: string[] = [];
+      if (info) {
+        const keys = info.data;
+        const isInVCPKG = kit.toolchainFile && inVCPKGRoot(kit.toolchainFile);
+        for (const [key, value] of keys) {
+          if (!isValidKey(key)) {
+            continue;
+          }
+          if (value) {
+            paths.push(value);
+            // vcpkg spacial case
+            if (isInVCPKG) {
+              if (value.endsWith('bin')) {
+                const installPrefix = info.get('QT_INSTALL_PREFIX');
+                if (installPrefix) {
+                  const installPrefixDebug = path.join(installPrefix, 'debug');
+                  const newValue = value.replace(
+                    installPrefix,
+                    installPrefixDebug
+                  );
+                  paths.push(newValue);
+                }
+              }
+            }
+          }
+        }
+      }
+      const ret = paths.join(path.delimiter);
+      return ret;
+    }
+    logger.error('Could not find the selected Qt installation path');
+    return undefined;
+  });
+}
+
+// Keep this function due to the backward compatibility
+export function registerKitDirectoryCommand() {
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.kitDirectory`,
+    async () => {
+      const kit = await getSelectedKit();
+      if (kit?.environmentVariables?.VSCODE_QT_INSTALLATION) {
+        return kit.environmentVariables.VSCODE_QT_INSTALLATION;
+      }
+      logger.error('Could not find the selected Qt installation path');
+      return undefined;
+    }
+  );
+}
+
+export function qpaPlatfromPluginPathCommand() {
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.qpaPlatfromPluginPath`,
+    async () => {
+      const kit = await getSelectedKit();
+      if (kit?.environmentVariables?.VSCODE_QT_QTPATHS_EXE) {
+        if (kit.toolchainFile && inVCPKGRoot(kit.toolchainFile)) {
+          const info = coreAPI?.getQtInfoFromPath(
+            kit.environmentVariables.VSCODE_QT_QTPATHS_EXE
+          );
+          if (info) {
+            const buildType =
+              await vscode.commands.executeCommand('cmake.buildType');
+            let pluginPath = info.get('QT_INSTALL_PLUGINS');
+            if (pluginPath) {
+              pluginPath = path.join(pluginPath, 'platforms');
+              if (buildType !== 'Debug') {
+                return pluginPath;
+              }
+              // If code reaches here, it means that the build type is Debug and
+              // we need to return the debug version of the plugin path
+              const installPrefix = info.get('QT_INSTALL_PREFIX');
+              if (installPrefix) {
+                const installPrefixDebug = path.join(installPrefix, 'debug');
+                if (pluginPath) {
+                  const pluginPathDebug = pluginPath.replace(
+                    path.normalize(installPrefix),
+                    installPrefixDebug
+                  );
+                  return pluginPathDebug;
+                }
+              }
+            }
+          }
+        }
+      }
+      return process.env.QT_QPA_PLATFORM_PLUGIN_PATH ?? '';
     }
   );
 }

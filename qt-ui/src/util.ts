@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as child_process from 'child_process';
 
 import * as constants from '@/constants';
 import {
@@ -10,8 +11,10 @@ import {
   IsWindows,
   OSExeSuffix,
   exists,
-  queryHostBinDirPath
+  locateQmakeExeFilePath,
+  QtInfo
 } from 'qt-lib';
+import { coreAPI } from '@/extension';
 
 export function getConfig<T>(
   key: string,
@@ -37,27 +40,27 @@ export async function delay(ms: number) {
 
 const DesignerExeName = IsMacOS ? 'Designer' : 'designer' + OSExeSuffix;
 
-export async function locateQtDesignerExePath(selectedQtPath: string) {
-  const getDesignerExePath = (selectedQtBinPath: string) => {
-    const macOSPath = path.join(
-      'Designer.app',
-      'Contents',
-      'MacOS',
-      DesignerExeName
-    );
-    return IsMacOS
-      ? path.join(selectedQtBinPath, macOSPath)
-      : path.join(selectedQtBinPath, DesignerExeName);
-  };
+function getDesignerExePath(selectedQtBinPath: string) {
+  const macOSPath = path.join(
+    'Designer.app',
+    'Contents',
+    'MacOS',
+    DesignerExeName
+  );
+  return IsMacOS
+    ? path.join(selectedQtBinPath, macOSPath)
+    : path.join(selectedQtBinPath, DesignerExeName);
+}
+
+export async function locateDesigner(selectedQtPath: string) {
   let designerExePath = getDesignerExePath(path.join(selectedQtPath, 'bin'));
   if (await exists(designerExePath)) {
     return designerExePath;
   }
-
-  const hostBinDir = await queryHostBinDirPath(selectedQtPath);
-  designerExePath = getDesignerExePath(hostBinDir);
-  if (await exists(designerExePath)) {
-    return designerExePath;
+  const qmakeExePath = await locateQmakeExeFilePath(selectedQtPath);
+  const designer = extractDesignerExePathFromQtPath(qmakeExePath);
+  if (await designer) {
+    return designer;
   }
 
   if (!IsWindows) {
@@ -68,4 +71,70 @@ export async function locateQtDesignerExePath(selectedQtPath: string) {
   }
 
   return '';
+}
+
+export async function locateDesignerFromQtPaths(qtPaths: string) {
+  const info = coreAPI?.getQtInfoFromPath(qtPaths);
+  if (!info) {
+    return '';
+  }
+  const designerExePath = await searchForDesignerInQtInfo(info);
+  if (designerExePath) {
+    return designerExePath;
+  }
+  return undefined;
+}
+
+async function extractDesignerExePathFromQtPath(qtPathExePath: string) {
+  const hostBinDir = await queryHostBinDirPath(qtPathExePath);
+  const designerExePath = getDesignerExePath(hostBinDir);
+  if (await exists(designerExePath)) {
+    return designerExePath;
+  }
+  return undefined;
+}
+
+async function searchForDesignerInQtInfo(info: QtInfo) {
+  const keysToCheck = [
+    'QT_HOST_BINS',
+    'QT_HOST_LIBEXECS',
+    'QT_INSTALL_LIBEXECS'
+  ];
+  for (const key of keysToCheck) {
+    const value = info.get(key);
+    if (value) {
+      const designerExePath = getDesignerExePath(value);
+      if (await exists(designerExePath)) {
+        return designerExePath;
+      }
+    }
+  }
+  return undefined;
+}
+
+async function queryHostBinDirPath(qtpathsExePath: string): Promise<string> {
+  const childProcess = child_process.exec(
+    qtpathsExePath + ' -query QT_HOST_BINS'
+  );
+  const promiseFirstLineOfOutput = new Promise<string>((resolve, reject) => {
+    childProcess.stdout?.on('data', (data: string) => {
+      resolve(data.toString().trim());
+    });
+    childProcess.stderr?.on('data', (data: string) => {
+      reject(new Error(data.toString().trim()));
+    });
+  });
+  const promiseProcessClose = new Promise<string>((resolve, reject) => {
+    childProcess.on('close', () => {
+      resolve('');
+    });
+    childProcess.on('error', (err) => {
+      reject(err);
+    });
+  });
+  const hostBinDir = await Promise.race([
+    promiseFirstLineOfOutput,
+    promiseProcessClose
+  ]);
+  return hostBinDir;
 }

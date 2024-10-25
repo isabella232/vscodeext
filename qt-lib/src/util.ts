@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
-import * as child_process from 'child_process';
 
 import { QtInfo } from './core-api';
 
@@ -62,36 +61,6 @@ export function askForKitSelection() {
 
 export function isMultiWorkspace(): boolean {
   return vscode.workspace.workspaceFile !== undefined;
-}
-
-export async function queryHostBinDirPath(
-  selectedQtPath: string
-): Promise<string> {
-  const qmakeExePath = await locateQmakeExeFilePath(selectedQtPath);
-  const childProcess = child_process.exec(
-    qmakeExePath + ' -query QT_HOST_BINS'
-  );
-  const promiseFirstLineOfOutput = new Promise<string>((resolve, reject) => {
-    childProcess.stdout?.on('data', (data: string) => {
-      resolve(data.toString().trim());
-    });
-    childProcess.stderr?.on('data', (data: string) => {
-      reject(new Error(data.toString().trim()));
-    });
-  });
-  const promiseProcessClose = new Promise<string>((resolve, reject) => {
-    childProcess.on('close', () => {
-      resolve('');
-    });
-    childProcess.on('error', (err) => {
-      reject(err);
-    });
-  });
-  const hostBinDir = await Promise.race([
-    promiseFirstLineOfOutput,
-    promiseProcessClose
-  ]);
-  return hostBinDir;
 }
 
 export async function locateQmakeExeFilePath(selectedQtPath: string) {

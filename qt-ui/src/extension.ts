@@ -16,6 +16,8 @@ import { UIEditorProvider } from '@/editors/ui/ui-editor';
 import { createUIProject, UIProject } from '@/project';
 import { EXTENSION_ID } from '@/constants';
 import { openWidgetDesigner } from '@/commands';
+import { locateDesigner } from '@/util';
+import { DesignerClient } from '@/designer-client';
 
 const logger = createLogger('extension');
 
@@ -39,6 +41,11 @@ export async function activate(context: vscode.ExtensionContext) {
       project.folder,
       'selectedKitPath'
     );
+    const selectedQtPaths = coreAPI?.getValue<string>(
+      project.folder,
+      'selectedQtPaths'
+    );
+
     const workspaceType = coreAPI?.getValue<QtWorkspaceType>(
       project.folder,
       'workspaceType'
@@ -49,6 +56,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     if (selectedKitPath) {
       await project.setBinDir(selectedKitPath);
+    } else if (selectedQtPaths) {
+      const designer = await locateDesigner(selectedQtPaths);
+      if (designer) {
+        project.designerClient = new DesignerClient(
+          designer,
+          project.designerServer.getPort()
+        );
+      }
     }
   });
   projectManager.onProjectRemoved((project) => {
@@ -90,6 +105,10 @@ function processMessage(message: QtWorkspaceConfigMessage) {
   const selectedKitPath = message.get<string>('selectedKitPath');
   if (selectedKitPath !== project.binDir) {
     void project.setBinDir(selectedKitPath);
+  }
+  const selectedQtPaths = message.get<string>('selectedQtPaths');
+  if (selectedQtPaths !== project.qtpathsExe) {
+    project.qtpathsExe = selectedQtPaths;
   }
   if (message.config.has('workspaceType')) {
     project.workspaceType = message.config.get(

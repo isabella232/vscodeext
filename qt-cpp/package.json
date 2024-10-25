@@ -48,6 +48,7 @@
     "onCommand:cmake.buildKit",
     "onCommand:cmake.tasksBuildCommand",
     "onCommand:qt-cpp.kitDirectory",
+    "onCommand:qt-cpp.qtDir",
     "onCommand:qt-cpp.minGWgdb",
     "onCommand:qt-cpp.natvis",
     "onCommand:qt-cpp.natvis5",
@@ -99,7 +100,11 @@
                 "environment": [
                   {
                     "name": "PATH",
-                    "value": "^\"\\${env:PATH};\\${command:qt-cpp.kitDirectory}\\${/}bin\""
+                    "value": "^\"\\${env:PATH};\\${command:qt-cpp.qtDir}\""
+                  },
+                  {
+                    "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
+                    "value": "^\"\\${command:qt-cpp.qpaPlatfromPluginPath}\""
                   }
                 ],
                 "MIMode": "gdb",
@@ -130,7 +135,11 @@
                 "environment": [
                   {
                     "name": "PATH",
-                    "value": "^\"\\${env:PATH};\\${command:qt-cpp.kitDirectory}\\${/}bin\""
+                    "value": "^\"\\${env:PATH};\\${command:qt-cpp.qtDir}\""
+                  },
+                  {
+                    "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
+                    "value": "^\"\\${command:qt-cpp.qpaPlatfromPluginPath}\""
                   }
                 ],
                 "MIMode": "lldb"
@@ -152,7 +161,11 @@
                 "environment": [
                   {
                     "name": "PATH",
-                    "value": "^\"\\${env:PATH};\\${command:qt-cpp.kitDirectory}\\${/}bin\""
+                    "value": "^\"\\${env:PATH};\\${command:qt-cpp.qtDir}\""
+                  },
+                  {
+                    "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
+                    "value": "^\"\\${command:qt-cpp.qpaPlatfromPluginPath}\""
                   }
                 ]
               }

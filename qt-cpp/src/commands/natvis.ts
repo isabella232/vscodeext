@@ -5,9 +5,10 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
+import { getSelectedKit, IsQtKit } from '@cmd/register-qt-path';
 import { createLogger } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
+import { coreAPI } from '@/extension';
 
 const logger = createLogger('natvis');
 
@@ -44,14 +45,23 @@ export function registerNatvisCommand() {
   const natvisDisposal = vscode.commands.registerCommand(
     `${EXTENSION_ID}.natvis`,
     async () => {
-      const selectedQtInstallation = await getSelectedQtInstallationPath();
-      if (!selectedQtInstallation) {
-        const error = 'Could not find the selected Qt installation path';
-        logger.error(error);
+      const kit = await getSelectedKit();
+      if (!kit || !IsQtKit(kit)) {
+        const error = `${kit?.name} is not a Qt kit`;
         throw new Error(error);
       }
-      const qtVersion = selectedQtInstallation.includes('6.') ? '6' : '5';
-      return getNatvis(qtVersion);
+      const qtInsRoot = kit.environmentVariables?.VSCODE_QT_INSTALLATION;
+      if (qtInsRoot) {
+        const qtVersion = qtInsRoot.includes('6.') ? '6' : '5';
+        return getNatvis(qtVersion);
+      }
+      const qtPathsExe = kit.environmentVariables?.VSCODE_QT_QTPATHS_EXE;
+      if (qtPathsExe) {
+        const qtInfo = coreAPI?.getQtInfoFromPath(qtPathsExe);
+        const qtVersion = qtInfo?.get('QT_VERSION')?.includes('6.') ? '6' : '5';
+        return getNatvis(qtVersion);
+      }
+      return undefined;
     }
   );
   const natvis5Disposal = vscode.commands.registerCommand(

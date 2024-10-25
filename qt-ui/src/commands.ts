@@ -12,7 +12,7 @@ import {
   CORE_EXTENSION_ID
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
-import { locateQtDesignerExePath } from '@/util';
+import { locateDesigner } from '@/util';
 
 const logger = createLogger('commands');
 
@@ -92,7 +92,7 @@ export async function openWidgetDesigner() {
     if (!groupedQtInstallations[version][0]) {
       continue;
     }
-    const locatedPath = await locateQtDesignerExePath(
+    const locatedPath = await locateDesigner(
       groupedQtInstallations[version][0]
     );
     if (!locatedPath) {

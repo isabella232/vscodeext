@@ -15,15 +15,21 @@ import {
   GlobalWorkspace,
   QtAdditionalPath
 } from 'qt-lib';
-import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
-import { registerKitDirectoryCommand } from '@cmd/kit-directory';
+import {
+  getQtInsRoot,
+  getQtPathsExe,
+  getSelectedKit
+} from '@cmd/register-qt-path';
 import { registerMinGWgdbCommand } from '@cmd/mingw-gdb';
 import { registerResetCommand } from '@cmd/reset-qt-ext';
 import { registerNatvisCommand } from '@cmd/natvis';
 import { registerScanForQtKitsCommand } from '@cmd/scan-qt-kits';
 import {
   registerbuildDirectoryName,
-  registerlaunchTargetFilenameWithoutExtension
+  registerlaunchTargetFilenameWithoutExtension,
+  registerKitDirectoryCommand,
+  qtDirCommand,
+  qpaPlatfromPluginPathCommand
 } from '@cmd/launch-variables';
 import { createCppProject, CppProjectManager, CppProject } from '@/project';
 import { KitManager } from '@/kit-manager';
@@ -55,7 +61,9 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   context.subscriptions.push(
+    qpaPlatfromPluginPathCommand(),
     registerKitDirectoryCommand(),
+    qtDirCommand(),
     registerMinGWgdbCommand(),
     registerResetCommand(),
     ...registerNatvisCommand(),
@@ -94,14 +102,15 @@ export async function initCoreValues() {
 
   for (const project of projectManager.getProjects()) {
     const folder = project.folder;
-    const selectedKitPath = await getSelectedQtInstallationPath(folder);
+    const kit = await getSelectedKit(folder);
     const message = new QtWorkspaceConfigMessage(folder);
-    if (selectedKitPath) {
-      logger.info(
-        `Setting selected kit path for ${folder.uri.fsPath} to ${selectedKitPath}`
-      );
-      message.config.set('selectedKitPath', selectedKitPath);
-    }
+    const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
+    logger.info(
+      `Setting selected kit path for ${folder.uri.fsPath} to ${selectedKitPath}`
+    );
+    message.config.set('selectedKitPath', selectedKitPath);
+    const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
+    message.config.set('selectedQtPaths', selectedQtPaths);
     message.config.set('workspaceType', QtWorkspaceType.CMakeExt);
     logger.info('Updating coreAPI with message:', message as unknown as string);
     coreAPI.update(message);

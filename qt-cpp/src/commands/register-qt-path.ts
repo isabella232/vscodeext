@@ -18,26 +18,58 @@ export async function checkSelectedKitandAskForKitSelection() {
   return true;
 }
 
-export async function getSelectedQtInstallationPath(
-  folder?: vscode.WorkspaceFolder
-) {
-  if (folder === undefined) {
-    const activeFolder = await vscode.commands.executeCommand<string>(
-      'cmake.activeFolderPath'
-    );
-    if (activeFolder === '') {
-      logger.error('No active folder found.');
-      throw new Error('No active folder found.');
-    }
-    folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(activeFolder));
+export function IsQtKit(kit: Kit) {
+  return IsQtInsKit(kit) || IsQtPathsKit(kit);
+}
+
+export function IsQtInsKit(kit: Kit) {
+  return getQtInsRoot(kit) !== undefined;
+}
+
+export function IsQtPathsKit(kit: Kit) {
+  return getQtPathsExe(kit) !== undefined;
+}
+
+export function getQtInsRoot(kit: Kit) {
+  return kit.environmentVariables?.VSCODE_QT_INSTALLATION;
+}
+
+export function getQtPathsExe(kit: Kit) {
+  return kit.environmentVariables?.VSCODE_QT_QTPATHS_EXE;
+}
+
+async function getActiveFolder() {
+  const activeFolder = await vscode.commands.executeCommand<string>(
+    'cmake.activeFolderPath'
+  );
+  if (activeFolder === '') {
+    logger.error('No active folder found.');
+    throw new Error('No active folder found.');
   }
-  const selectedCMakeKit = await vscode.commands.executeCommand<string>(
+  return vscode.workspace.getWorkspaceFolder(vscode.Uri.file(activeFolder));
+}
+async function getSelectedKitName(folder?: vscode.WorkspaceFolder) {
+  if (folder === undefined) {
+    folder = await getActiveFolder();
+  }
+  const selectedKit = await vscode.commands.executeCommand<string>(
     'cmake.buildKit',
     folder
   );
-  logger.info('Selected CMake kit:', selectedCMakeKit);
-  if (!(await checkSelectedKitandAskForKitSelection())) {
-    return '';
+  logger.info('Selected CMake kit:', selectedKit);
+  if (!selectedKit || selectedKit === '__unspec__' || selectedKit === '') {
+    return undefined;
+  }
+  return selectedKit;
+}
+export async function getSelectedKit(folder?: vscode.WorkspaceFolder) {
+  if (folder === undefined) {
+    folder = await getActiveFolder();
+  }
+  const selectedKitName = await getSelectedKitName(folder);
+  if (selectedKitName === undefined) {
+    askForKitSelection();
+    return undefined;
   }
 
   const addtionalKits = vscode.workspace
@@ -65,42 +97,20 @@ export async function getSelectedQtInstallationPath(
         logger.error('Failed to parse kits file:', error.message);
       }
     }
-    const selectedQtKit = kits.find((kit) => kit.name === selectedCMakeKit);
+    const selectedQtKit = kits.find((kit) => kit.name === selectedKitName);
 
-    if (selectedQtKit === undefined) {
-      continue;
+    if (selectedQtKit) {
+      return selectedQtKit;
     }
-    if (
-      selectedQtKit.environmentVariables?.VSCODE_QT_INSTALLATION === undefined
-    ) {
-      const errorMessage =
-        '"VSCODE_QT_INSTALLATION" environment variable is not set for "' +
-        selectedCMakeKit +
-        '".';
-      logger.error(errorMessage);
-      void vscode.window.showErrorMessage(errorMessage);
-      continue;
-    }
-
-    const selectedQtKitPath =
-      selectedQtKit.environmentVariables.VSCODE_QT_INSTALLATION;
-
-    if (fs.existsSync(selectedQtKitPath)) {
-      logger.info('Selected Qt installation path:', selectedQtKitPath);
-      return selectedQtKitPath;
-    }
-    const errorMessage = `"${selectedQtKitPath}" does not exist in "${selectedCMakeKit}".`;
-    logger.error(errorMessage);
-    void vscode.window.showErrorMessage(errorMessage);
   }
-
   // Note: If a workspace is added to a workspacefile, the below message may be
   // shown. Becase cmake.buildKit at the beggining if this function is called
   // before the cmake extension resolves the cmake kit in the newly added
   // workspace folder.
   // TODO: Wait until the cmake extension resolves the cmake kit.
-  const errorMessage = selectedCMakeKit + ' is not a valid Qt kit.';
+  // TODO: Make this error silent in some cases.
+  const errorMessage = selectedKitName + ' is not a valid Qt kit.';
   logger.error(errorMessage);
   void vscode.window.showErrorMessage(errorMessage);
-  return '';
+  return undefined;
 }

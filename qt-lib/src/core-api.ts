@@ -61,8 +61,8 @@ export class QtInfo {
 
   constructor(
     public readonly qtPathsBin: string,
-    public readonly name?: string,
-    public readonly isVCPKG?: boolean
+    public name?: string,
+    public isVCPKG?: boolean
   ) {
     this.data = new Map() as QtPathsData;
   }
@@ -82,6 +82,7 @@ export interface CoreAPI {
   ): T | undefined;
   onValueChanged: vscode.Event<QtWorkspaceConfigMessage>;
   getQtInfo(qtPathsExecutable: QtAdditionalPath): QtInfo | undefined;
+  getQtInfoFromPath(qtPathsExe: string): QtInfo | undefined;
   reset(): void;
 }
 
