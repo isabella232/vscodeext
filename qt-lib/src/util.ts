@@ -21,7 +21,7 @@ export const Isx64 = os.arch() === 'x64';
 
 export const OSExeSuffix = IsWindows ? '.exe' : '';
 export const UserLocalDir = IsWindows
-  ? process.env.LOCALAPPDATA ?? ''
+  ? (process.env.LOCALAPPDATA ?? '')
   : path.join(Home, '.local/share');
 
 export async function delay(ms: number) {

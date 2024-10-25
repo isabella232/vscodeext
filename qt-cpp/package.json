@@ -14,7 +14,7 @@
     "url": "https://bugreports.qt.io/projects/VSCODEEXT"
   },
   "engines": {
-    "vscode": "^1.78.0"
+    "vscode": "^1.94.0"
   },
   "categories": [
     "Programming Languages",
@@ -220,21 +220,21 @@
   "devDependencies": {
     "@types/command-exists": "^1.2.3",
     "@types/license-checker": "^25.0.6",
-    "@types/node": "^20.2.5",
-    "@types/vscode": "^1.78.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.3",
-    "@typescript-eslint/parser": "^6.7.3",
+    "@types/node": "^20.17.0",
+    "@types/vscode": "^1.94.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vscode/l10n-dev": "^0.0.30",
-    "@vscode/test-electron": "^2.3.2",
-    "@vscode/vsce": "^2.26.1",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^2.32.0",
     "cross-env": "^7.0.3",
-    "esbuild": "^0.20.1",
-    "eslint": "^8.50.0",
+    "esbuild": "^0.20.2",
+    "eslint": "^8.57.1",
     "license-checker": "^25.0.1",
-    "mocha": "^10.2.0",
-    "prettier": "^3.0.3",
-    "ts-node": "^10.4.0",
-    "typescript": "^5.2.2"
+    "mocha": "^10.7.3",
+    "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "@vscode/l10n": "^0.0.16",
@@ -242,7 +242,7 @@
     "command-exists": "^1.2.9",
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
-    "typescript": "^5.2.2",
+    "typescript": "^5.6.3",
     "vscode-cmake-tools": "^1.2.0"
   }
 }
