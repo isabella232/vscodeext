@@ -186,6 +186,10 @@ async function unzipWithProgress(zipPath: string) {
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       progress.report({ message: name });
 
+      if (entry.fileName.endsWith('/')) {
+        return null;
+      }
+
       return fs.createWriteStream(dest);
     };
 
