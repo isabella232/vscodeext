@@ -71,11 +71,10 @@ export async function getSelectedQtInstallationPath(
       continue;
     }
     if (
-      selectedQtKit.environmentVariables?.VSCODE_QT_INSTALLATION_ROOT ===
-      undefined
+      selectedQtKit.environmentVariables?.VSCODE_QT_INSTALLATION === undefined
     ) {
       const errorMessage =
-        '"VSCODE_QT_INSTALLATION_ROOT" environment variable is not set for "' +
+        '"VSCODE_QT_INSTALLATION" environment variable is not set for "' +
         selectedCMakeKit +
         '".';
       logger.error(errorMessage);
@@ -84,7 +83,7 @@ export async function getSelectedQtInstallationPath(
     }
 
     const selectedQtKitPath =
-      selectedQtKit.environmentVariables.VSCODE_QT_INSTALLATION_ROOT;
+      selectedQtKit.environmentVariables.VSCODE_QT_INSTALLATION;
 
     if (fs.existsSync(selectedQtKitPath)) {
       logger.info('Selected Qt installation path:', selectedQtKitPath);

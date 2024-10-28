@@ -522,7 +522,7 @@ export class KitManager {
     let newKit: Kit = {
       name: kitName,
       environmentVariables: {
-        VSCODE_QT_INSTALLATION_ROOT: installation,
+        VSCODE_QT_INSTALLATION: installation,
         PATH: qtPathEnv
       },
       isTrusted: true,
@@ -621,7 +621,7 @@ export class KitManager {
     // that were created by the cmake extension as templates.
     return allCMakeKits.filter(
       (kit) =>
-        kit.environmentVariables?.VSCODE_QT_INSTALLATION_ROOT === undefined &&
+        kit.environmentVariables?.VSCODE_QT_INSTALLATION === undefined &&
         kit.environmentVariables?.VSCODE_QT_QTPATHS_EXE === undefined
     );
   }
