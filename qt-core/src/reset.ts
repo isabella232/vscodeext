@@ -4,9 +4,10 @@
 import * as vscode from 'vscode';
 
 import { coreAPI, projectManager } from '@/extension';
+import { EXTENSION_ID } from '@/constants';
 
 export function resetCommand() {
-  return vscode.commands.registerCommand('qt-core.reset', () => {
+  return vscode.commands.registerCommand(`${EXTENSION_ID}.reset`, () => {
     coreAPI?.reset();
     projectManager.reset();
     const extensions = ['qt-cpp', 'qt-qml', 'qt-ui'];
