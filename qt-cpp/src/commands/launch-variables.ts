@@ -7,7 +7,7 @@ import * as path from 'path';
 import { inVCPKGRoot, createLogger } from 'qt-lib';
 import { getFilenameWithoutExtension } from '@util/util';
 import { EXTENSION_ID } from '@/constants';
-import { getSelectedKit } from '@cmd/register-qt-path';
+import { getQtInsRoot, getSelectedKit } from '@cmd/register-qt-path';
 import { coreAPI } from '@/extension';
 
 const logger = createLogger('launch-variables');
@@ -46,11 +46,14 @@ export function registerbuildDirectoryName() {
 export function qtDirCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.qtDir`, async () => {
     const kit = await getSelectedKit();
-    const insRoot = kit?.environmentVariables?.VSCODE_QT_INSTALLATION;
+    if (!kit) {
+      return undefined;
+    }
+    const insRoot = getQtInsRoot(kit);
     if (insRoot) {
       return path.join(insRoot, 'bin');
     }
-    const pathsExe = kit?.environmentVariables?.VSCODE_QT_QTPATHS_EXE;
+    const pathsExe = kit.environmentVariables?.VSCODE_QT_QTPATHS_EXE;
     if (pathsExe) {
       const isValidKey = (key: string) => {
         const keysShouldStartWith = ['QT_INSTALL', 'QT_HOST'];
@@ -103,10 +106,15 @@ export function registerKitDirectoryCommand() {
     `${EXTENSION_ID}.kitDirectory`,
     async () => {
       const kit = await getSelectedKit();
-      if (kit?.environmentVariables?.VSCODE_QT_INSTALLATION) {
-        return kit.environmentVariables.VSCODE_QT_INSTALLATION;
+      if (!kit) {
+        return undefined;
       }
-      logger.error('Could not find the selected Qt installation path');
+      const insRoot = getQtInsRoot(kit);
+      if (insRoot) {
+        return insRoot;
+      }
+      const message = `Could not find VSCODE_QT_FOLDER in the selected kit: ${kit.name}`;
+      void vscode.window.showErrorMessage(message);
       return undefined;
     }
   );

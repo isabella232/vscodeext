@@ -5,23 +5,25 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { IsWindows, createLogger } from 'qt-lib';
-import { getSelectedKit } from '@cmd/register-qt-path';
+import { IsWindows } from 'qt-lib';
+import { getQtInsRoot, getSelectedKit } from '@cmd/register-qt-path';
 import { EXTENSION_ID } from '@/constants';
 
-const logger = createLogger('mingw-gdb');
-
-async function findMinGWgdbPath(): Promise<string> {
+async function findMinGWgdbPath(): Promise<string | undefined> {
   if (!IsWindows) {
     throw new Error('MinGW gdb is only available on Windows');
   }
   const kit = await getSelectedKit();
-  if (!kit?.environmentVariables?.VSCODE_QT_INSTALLATION) {
-    const message = 'Could not find the selected Qt installation path';
-    logger.error(message);
-    throw new Error(message);
+  if (!kit) {
+    return undefined;
   }
-  const selectedQtPath = kit.environmentVariables.VSCODE_QT_INSTALLATION;
+  const insRoot = getQtInsRoot(kit);
+  if (!insRoot) {
+    const message = `Could not find VSCODE_QT_INSTALLATION in the selected kit: ${kit.name}`;
+    void vscode.window.showErrorMessage(message);
+    return undefined;
+  }
+  const selectedQtPath = insRoot;
   const toolsDir = locateToolsDir(selectedQtPath);
   const mingwDir = fs
     .readdirSync(toolsDir)

@@ -31,7 +31,11 @@ export function IsQtPathsKit(kit: Kit) {
 }
 
 export function getQtInsRoot(kit: Kit) {
-  return kit.environmentVariables?.VSCODE_QT_INSTALLATION;
+  // Keep VSCODE_QT_FOLDER for backward compatibility.
+  return (
+    kit.environmentVariables?.VSCODE_QT_INSTALLATION ??
+    kit.environmentVariables?.VSCODE_QT_FOLDER
+  );
 }
 
 export function getQtPathsExe(kit: Kit) {

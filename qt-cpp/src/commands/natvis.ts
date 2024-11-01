@@ -5,7 +5,12 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-import { getSelectedKit, IsQtKit } from '@cmd/register-qt-path';
+import {
+  getQtInsRoot,
+  getQtPathsExe,
+  getSelectedKit,
+  IsQtKit
+} from '@cmd/register-qt-path';
 import { createLogger } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
@@ -50,12 +55,12 @@ export function registerNatvisCommand() {
         const error = `${kit?.name} is not a Qt kit`;
         throw new Error(error);
       }
-      const qtInsRoot = kit.environmentVariables?.VSCODE_QT_INSTALLATION;
+      const qtInsRoot = getQtInsRoot(kit);
       if (qtInsRoot) {
         const qtVersion = qtInsRoot.includes('6.') ? '6' : '5';
         return getNatvis(qtVersion);
       }
-      const qtPathsExe = kit.environmentVariables?.VSCODE_QT_QTPATHS_EXE;
+      const qtPathsExe = getQtPathsExe(kit);
       if (qtPathsExe) {
         const qtInfo = coreAPI?.getQtInfoFromPath(qtPathsExe);
         const qtVersion = qtInfo?.get('QT_VERSION')?.includes('6.') ? '6' : '5';
