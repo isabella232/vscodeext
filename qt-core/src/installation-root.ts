@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import untildify from 'untildify';
 
 import {
   Home,
@@ -44,7 +45,8 @@ function getDoNotAskForDefaultQtInstallationRoot(): boolean {
 export function getCurrentGlobalQtInstallationRoot(): string {
   const qtInsRootConfig =
     getConfiguration().inspect<string>(QtInsRootConfigName);
-  return qtInsRootConfig?.globalValue ?? '';
+  const insRoot = qtInsRootConfig?.globalValue;
+  return insRoot ? untildify(insRoot) : '';
 }
 
 export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
