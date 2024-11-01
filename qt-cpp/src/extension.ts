@@ -29,7 +29,8 @@ import {
   registerlaunchTargetFilenameWithoutExtension,
   registerKitDirectoryCommand,
   qtDirCommand,
-  qpaPlatformPluginPathCommand
+  qpaPlatformPluginPathCommand,
+  qmlImportPathCommand
 } from '@cmd/launch-variables';
 import { createCppProject, CppProjectManager, CppProject } from '@/project';
 import { KitManager } from '@/kit-manager';
@@ -62,6 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     qpaPlatformPluginPathCommand(),
+    qmlImportPathCommand(),
     registerKitDirectoryCommand(),
     qtDirCommand(),
     registerMinGWgdbCommand(),

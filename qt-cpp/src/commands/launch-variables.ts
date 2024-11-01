@@ -152,3 +152,44 @@ export function qpaPlatformPluginPathCommand() {
     }
   );
 }
+
+export function qmlImportPathCommand() {
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.QML_IMPORT_PATH`,
+    async () => {
+      const kit = await getSelectedKit();
+      if (kit?.environmentVariables?.VSCODE_QT_QTPATHS_EXE) {
+        if (kit.toolchainFile && inVCPKGRoot(kit.toolchainFile)) {
+          const info = coreAPI?.getQtInfoFromPath(
+            kit.environmentVariables.VSCODE_QT_QTPATHS_EXE
+          );
+          if (info) {
+            const buildType =
+              await vscode.commands.executeCommand('cmake.buildType');
+            let importPath = info.get('QT_INSTALL_QML');
+            if (importPath) {
+              importPath = path.normalize(importPath);
+              if (buildType !== 'Debug') {
+                return importPath;
+              }
+              // If code reaches here, it means that the build type is Debug and
+              // we need to return the debug version of the import path
+              const installPrefix = info.get('QT_INSTALL_PREFIX');
+              if (installPrefix) {
+                const installPrefixDebug = path.join(installPrefix, 'debug');
+                if (importPath) {
+                  const importPathDebug = importPath.replace(
+                    path.normalize(installPrefix),
+                    installPrefixDebug
+                  );
+                  return importPathDebug;
+                }
+              }
+            }
+          }
+        }
+      }
+      return process.env.QML_IMPORT_PATH ?? '';
+    }
+  );
+}

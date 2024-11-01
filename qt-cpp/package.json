@@ -105,6 +105,10 @@
                   {
                     "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
                     "value": "^\"\\${command:qt-cpp.qpaPlatformPluginPath}\""
+                  },
+                  {
+                    "name": "QML_IMPORT_PATH",
+                    "value": "^\"\\${command:qt-cpp.QML_IMPORT_PATH}\""
                   }
                 ],
                 "MIMode": "gdb",
@@ -140,6 +144,10 @@
                   {
                     "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
                     "value": "^\"\\${command:qt-cpp.qpaPlatformPluginPath}\""
+                  },
+                  {
+                    "name": "QML_IMPORT_PATH",
+                    "value": "^\"\\${command:qt-cpp.QML_IMPORT_PATH}\""
                   }
                 ],
                 "MIMode": "lldb"
@@ -166,6 +174,10 @@
                   {
                     "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
                     "value": "^\"\\${command:qt-cpp.qpaPlatformPluginPath}\""
+                  },
+                  {
+                    "name": "QML_IMPORT_PATH",
+                    "value": "^\"\\${command:qt-cpp.QML_IMPORT_PATH}\""
                   }
                 ]
               }
