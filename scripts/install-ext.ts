@@ -2,23 +2,23 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as fs from 'fs';
+import * as path from 'path';
 import { program } from 'commander';
 import { execSync } from 'child_process';
-import { compare } from 'semver';
+
+import { getExtensionVersion } from './common';
 
 function main() {
-  program.option(
-    '-d, --dir <string>',
-    'Path to target extension output directory'
-  );
+  program.option('-d, --dir <string>', 'Path to target extension directory');
   program.option('-n, --name <string>', 'Name of the extension');
   program.parse(process.argv);
   const options = program.opts();
   const targetExtensionRoot = options.dir as string;
   const extensionName = options.name as string;
 
+  const outputDir = path.join(targetExtensionRoot, 'out');
   // try to find <name>-*.vsix in the output directory
-  const files = fs.readdirSync(targetExtensionRoot);
+  const files = fs.readdirSync(outputDir);
   const extensionFiles = files.filter(
     (file) => file.startsWith(`${extensionName}-`) && file.endsWith('.vsix')
   );
@@ -27,17 +27,25 @@ function main() {
       `No extension files found in the output directory for ${extensionName}`
     );
   }
-  // Sort by version by using semver
-  extensionFiles.sort((a, b) => {
-    const versionA = a.split('-')[2]?.split('.vsix')[0] ?? '';
-    const versionB = b.split('-')[2]?.split('.vsix')[0] ?? '';
-    console.log(`Comparing ${versionA} and ${versionB}`);
-    return compare(versionA, versionB);
+  const packageVersion = getExtensionVersion(targetExtensionRoot);
+  if (!packageVersion) {
+    throw new Error('Failed to get package version');
+  }
+
+  // Install the matching version of the extension
+  const extension = extensionFiles.find((file) => {
+    const version = file.split('-')[2]?.split('.vsix')[0] ?? '';
+    return version === packageVersion;
   });
-  const extension = extensionFiles[extensionFiles.length - 1];
+
+  if (!extension) {
+    throw new Error(
+      `No extension file found for version ${packageVersion} in the output directory`
+    );
+  }
 
   execSync(`code --install-extension "${extension}"`, {
-    cwd: targetExtensionRoot,
+    cwd: outputDir,
     stdio: 'inherit'
   });
 }
