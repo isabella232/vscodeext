@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { program } from 'commander';
 import { execSync } from 'child_process';
+import { EOL } from 'os';
 
 type Licenses = Record<string, License>;
 
@@ -45,11 +46,11 @@ async function main() {
     fs.appendFileSync(thirdPartyLicensesFile, str);
   };
   const appendLicense = (license: string) => {
-    license.replace(/\r\n/g, '\n');
-    const lines = license.split('\n').map((line) => line.trimEnd());
-    append(lines.join('\n'));
+    const normalizedLicense = license.replace(/\r?\n/g, EOL);
+    const lines = normalizedLicense.split(EOL).map((line) => line.trimEnd());
+    append(lines.join(EOL));
   };
-  const initialText = `Third-Party Notices\n\nThis file contains the licenses for third-party software used in this product.\n`;
+  const initialText = `Third-Party Notices${EOL}${EOL}This file contains the licenses for third-party software used in this product.${EOL}`;
   append(initialText);
   const entries = Object.entries(outputJSON);
   console.log(`Found ${entries.length} third-party dependencies`);
@@ -57,16 +58,18 @@ async function main() {
     if (excludeList.some((excluded) => name.includes(excluded))) {
       continue;
     }
-    append('\n');
-    append('---------------------------------------------------------\n\n');
+    append(EOL);
+    append(
+      `---------------------------------------------------------${EOL}${EOL}`
+    );
     const version = name.split('@').pop();
     const nameWithoutVersion = name.replace(`@${version}`, '');
     const nameWithoutVersionAndPublisher = nameWithoutVersion.split('/').pop();
 
     append(
-      `${nameWithoutVersionAndPublisher} ${version} - ${license.licenses}\n`
+      `${nameWithoutVersionAndPublisher} ${version} - ${license.licenses}${EOL}`
     );
-    append(`${license.repository}#readme\n\n`);
+    append(`${license.repository}#readme${EOL}${EOL}`);
 
     if (
       !license.licenseFile ||
@@ -108,7 +111,9 @@ async function main() {
       const licenseFile = fs.readFileSync(license.licenseFile, 'utf-8');
       appendLicense(licenseFile);
     }
-    append('\n---------------------------------------------------------\n');
+    append(
+      `${EOL}---------------------------------------------------------${EOL}`
+    );
   }
   console.log('Third-party licenses generated successfully');
 }
