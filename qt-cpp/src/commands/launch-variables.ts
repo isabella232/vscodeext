@@ -112,9 +112,9 @@ export function registerKitDirectoryCommand() {
   );
 }
 
-export function qpaPlatfromPluginPathCommand() {
+export function qpaPlatformPluginPathCommand() {
   return vscode.commands.registerCommand(
-    `${EXTENSION_ID}.qpaPlatfromPluginPath`,
+    `${EXTENSION_ID}.qpaPlatformPluginPath`,
     async () => {
       const kit = await getSelectedKit();
       if (kit?.environmentVariables?.VSCODE_QT_QTPATHS_EXE) {

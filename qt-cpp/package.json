@@ -104,7 +104,7 @@
                   },
                   {
                     "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
-                    "value": "^\"\\${command:qt-cpp.qpaPlatfromPluginPath}\""
+                    "value": "^\"\\${command:qt-cpp.qpaPlatformPluginPath}\""
                   }
                 ],
                 "MIMode": "gdb",
@@ -139,7 +139,7 @@
                   },
                   {
                     "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
-                    "value": "^\"\\${command:qt-cpp.qpaPlatfromPluginPath}\""
+                    "value": "^\"\\${command:qt-cpp.qpaPlatformPluginPath}\""
                   }
                 ],
                 "MIMode": "lldb"
@@ -165,7 +165,7 @@
                   },
                   {
                     "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
-                    "value": "^\"\\${command:qt-cpp.qpaPlatfromPluginPath}\""
+                    "value": "^\"\\${command:qt-cpp.qpaPlatformPluginPath}\""
                   }
                 ]
               }
