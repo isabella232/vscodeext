@@ -44,7 +44,7 @@ function main() {
     );
   }
 
-  execSync(`code --install-extension "${extension}"`, {
+  execSync(`code --install-extension "${extension}" --force`, {
     cwd: outputDir,
     stdio: 'inherit'
   });
