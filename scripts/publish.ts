@@ -46,6 +46,10 @@ function main() {
   execSync(`npm run ci:${targetExtension}`, { stdio: 'inherit' });
   execSync(`npm run compile:${targetExtension}`, { stdio: 'inherit' });
   execSync(`npm run ci-lint:${targetExtension}`, { stdio: 'inherit' });
+  execSync(`npm run checkChangelog -- --dir="${targetExtensionRoot}"`, {
+    cwd: extensionRoot,
+    stdio: 'inherit'
+  });
   execSync(publishCommand, {
     cwd: targetExtensionRoot,
     stdio: 'inherit'
