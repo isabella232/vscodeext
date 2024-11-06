@@ -26,6 +26,7 @@ async function main() {
   const options = program.opts();
   const outputFile = options.output as string;
   const exclude = options.exclude as string;
+  const excludeList = exclude.split(',').map((excluded) => excluded.trim());
 
   console.log('Generating third-party licenses...');
   const targetExtensionRoot = options.dir as string;
@@ -53,7 +54,7 @@ async function main() {
   const entries = Object.entries(outputJSON);
   console.log(`Found ${entries.length} third-party dependencies`);
   for (const [name, license] of entries.sort()) {
-    if (name.includes(exclude)) {
+    if (excludeList.some((excluded) => name.includes(excluded))) {
       continue;
     }
     append('\n');
