@@ -339,7 +339,12 @@ export class KitManager {
 
     const tempPath: string[] = [];
     for (const [key, value] of qtInfo.data) {
-      if (key.startsWith('QMAKE_') || key === 'QT_VERSION' || !value) {
+      if (
+        key.startsWith('QMAKE_') ||
+        key === 'QT_VERSION' ||
+        !value ||
+        !key.startsWith('QT_')
+      ) {
         continue;
       }
       tempPath.push(value);
