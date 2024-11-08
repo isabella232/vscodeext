@@ -5,8 +5,7 @@ import * as vscode from 'vscode';
 
 import { telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import { DecisionCode, fetchAssetAndDecide } from '@/qmlls';
-import { qmlls } from '@/extension';
+import { DecisionCode, fetchAssetAndDecide, Qmlls } from '@/qmlls';
 
 export function registerDownloadQmllsCommand() {
   return vscode.commands.registerCommand(
@@ -19,7 +18,7 @@ export function registerDownloadQmllsCommand() {
         case DecisionCode.NeedToUpdate:
         case DecisionCode.AlreadyUpToDate:
           if (decision.asset) {
-            await qmlls.install(decision.asset, { restart: true });
+            await Qmlls.install(decision.asset, { restart: true });
           }
           break;
 

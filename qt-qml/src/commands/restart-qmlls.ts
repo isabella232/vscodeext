@@ -4,15 +4,12 @@
 import * as vscode from 'vscode';
 
 import { telemetry } from 'qt-lib';
-import { qmlls } from '@/extension';
+import { projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
 
 export function registerRestartQmllsCommand() {
-  return vscode.commands.registerCommand(
-    `${EXTENSION_ID}.restartQmlls`,
-    async () => {
-      telemetry.sendAction('restartQmlls');
-      await qmlls.restart();
-    }
-  );
+  return vscode.commands.registerCommand(`${EXTENSION_ID}.restartQmlls`, () => {
+    telemetry.sendAction('restartQmlls');
+    void projectManager.restartQmlls();
+  });
 }

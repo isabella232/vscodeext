@@ -4,8 +4,7 @@
 import * as vscode from 'vscode';
 
 import { EXTENSION_ID } from '@/constants';
-import { DecisionCode, fetchAssetAndDecide } from '@/qmlls';
-import { qmlls } from '@/extension';
+import { DecisionCode, fetchAssetAndDecide, Qmlls } from '@/qmlls';
 import { showAutoDismissNotification, telemetry } from 'qt-lib';
 
 export function registerCheckQmllsUpdateCommand() {
@@ -18,7 +17,7 @@ export function registerCheckQmllsUpdateCommand() {
       switch (decision.code) {
         case DecisionCode.NeedToUpdate:
           if (decision.asset) {
-            await qmlls.install(decision.asset, { restart: true });
+            await Qmlls.install(decision.asset, { restart: true });
           }
           break;
 

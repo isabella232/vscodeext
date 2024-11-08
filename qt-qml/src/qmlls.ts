@@ -75,24 +75,21 @@ export class Qmlls {
   private _client: LanguageClient | undefined;
   private _channel: vscode.OutputChannel | undefined;
 
-  constructor() {
+  constructor(readonly _folder: vscode.WorkspaceFolder) {
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (
-        event.affectsConfiguration(QMLLS_CONFIG) ||
-        event.affectsConfiguration(`${EXTENSION_ID}.${QtInsRootConfigName}`)
-      ) {
+      if (event.affectsConfiguration(QMLLS_CONFIG, _folder)) {
         void this.restart();
       }
     });
   }
 
-  public async install(
+  public static async install(
     asset: installer.AssetWithTag,
     options?: { restart: true }
   ) {
     try {
       if (options?.restart) {
-        await this.stop();
+        await projectManager.stopQmlls();
       }
 
       logger.info(`Installing: ${asset.name}, ${asset.tag_name}`);
@@ -103,21 +100,21 @@ export class Qmlls {
     }
 
     if (options?.restart) {
-      void this.startQmlls();
+      void projectManager.startQmlls();
+    }
+  }
+  public static async checkAssetAndDecide() {
+    const result = await fetchAssetAndDecide();
+    if (result.code === DecisionCode.NeedToUpdate && result.asset) {
+      await Qmlls.install(result.asset);
     }
   }
 
   public async start() {
-    const result = await fetchAssetAndDecide();
-    if (result.code === DecisionCode.NeedToUpdate && result.asset) {
-      await this.install(result.asset);
-    }
-
-    await this.startQmlls();
-  }
-
-  private async startQmlls() {
-    const configs = vscode.workspace.getConfiguration(QMLLS_CONFIG);
+    const configs = vscode.workspace.getConfiguration(
+      QMLLS_CONFIG,
+      this._folder
+    );
     if (!configs.get<boolean>('enabled', false)) {
       return;
     }
@@ -169,12 +166,17 @@ export class Qmlls {
   }
 
   private startLanguageClient(qmllsPath: string) {
-    const configs = vscode.workspace.getConfiguration(QMLLS_CONFIG);
+    const configs = vscode.workspace.getConfiguration(
+      QMLLS_CONFIG,
+      this._folder
+    );
     const verboseOutput = configs.get<boolean>('verboseOutput', false);
     const traceLsp = configs.get<string>('traceLsp', 'off');
 
     if (!this._channel) {
-      this._channel = vscode.window.createOutputChannel('QML Language Server');
+      this._channel = vscode.window.createOutputChannel(
+        `QML Language Server - ${this._folder.name}`
+      );
     }
 
     const serverOptions: ServerOptions = {
@@ -198,11 +200,10 @@ export class Qmlls {
       .start()
       .then(async () => {
         await this._client?.setTrace(Trace.fromString(traceLsp));
-        vscode.workspace.onDidChangeWorkspaceFolders(async () => {
-          await this.restart();
-        });
 
-        logger.info(`QML Language Server started, ${qmllsPath}`);
+        logger.info(
+          `QML Language Server started for ${this._folder.name} ${qmllsPath}`
+        );
       })
       .catch(() => {
         void vscode.window.showErrorMessage('Cannot start QML language server');
