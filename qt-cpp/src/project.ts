@@ -75,8 +75,6 @@ export class CppProjectManager extends ProjectManager<CppProject> {
   constructor(override readonly context: vscode.ExtensionContext) {
     super(context, createCppProject);
 
-    this.watchProjects(context);
-
     this.onProjectAdded((project: CppProject) => {
       logger.info('Adding project:', project.folder.uri.fsPath);
       kitManager.addProject(project);

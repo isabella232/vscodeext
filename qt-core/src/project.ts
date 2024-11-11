@@ -109,7 +109,6 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
     super(context, createCoreProject);
     this.globalStateManager = new GlobalStateManager(context);
     this.watchGlobalConfig(context);
-    this.watchProjects(context);
 
     this.onProjectAdded((project: CoreProject) => {
       logger.info('Adding project:', project.folder.uri.fsPath);
