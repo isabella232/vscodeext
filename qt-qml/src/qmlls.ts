@@ -94,6 +94,7 @@ export async function fetchAssetAndDecide(options?: {
 }
 
 export class Qmlls {
+  private readonly _importPaths = new Set<string>();
   private _client: LanguageClient | undefined;
   private _channel: vscode.OutputChannel | undefined;
 
@@ -103,6 +104,17 @@ export class Qmlls {
         void this.restart();
       }
     });
+  }
+
+  addImportPath(importPath: string) {
+    this._importPaths.add(importPath);
+  }
+
+  removeImportPath(importPath: string) {
+    this._importPaths.delete(importPath);
+  }
+  clearImportPaths() {
+    this._importPaths.clear();
   }
 
   public static async install(
@@ -201,10 +213,39 @@ export class Qmlls {
         `QML Language Server - ${this._folder.name}`
       );
     }
+    const args: string[] = [];
+    if (verboseOutput) {
+      args.push('--verbose');
+    }
 
+    const useQmlImportPathEnvVar = configs.get<boolean>(
+      'useQmlImportPathEnvVar',
+      false
+    );
+    if (useQmlImportPathEnvVar) {
+      args.push('-E');
+    }
+    const additionalImportPaths = configs.get<string[]>(
+      'additionalImportPaths',
+      []
+    );
+
+    const toImportParam = (p: string) => {
+      return `-I${p}`;
+    };
+
+    additionalImportPaths.forEach((importPath) => {
+      args.push(toImportParam(importPath));
+    });
+
+    this._importPaths.forEach((importPath) =>
+      args.push(toImportParam(importPath))
+    );
+
+    logger.info('Starting QML Language Server with:', args.join(';'));
     const serverOptions: ServerOptions = {
       command: qmllsPath,
-      args: verboseOutput ? ['--verbose'] : []
+      args: args
     };
 
     const clientOptions: LanguageClientOptions = {

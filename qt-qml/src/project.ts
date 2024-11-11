@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import path from 'path';
 
 import { Project, ProjectManager, createLogger } from 'qt-lib';
 import { Qmlls } from '@/qmlls';
+import { coreAPI } from '@/extension';
 
 const logger = createLogger('project');
 
@@ -44,6 +46,8 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
 // Project class represents a workspace folder in the extension.
 export class QMLProject implements Project {
   _qmlls: Qmlls;
+  _qtpathsExe: string | undefined;
+  _kitPath: string | undefined;
   public constructor(
     readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext
@@ -51,6 +55,35 @@ export class QMLProject implements Project {
     logger.info('Creating project:', _folder.uri.fsPath);
     this._qmlls = new Qmlls(_folder);
     void this.qmlls.start();
+  }
+  get kitPath() {
+    return this._kitPath;
+  }
+  set kitPath(kitPath: string | undefined) {
+    this._kitPath = kitPath;
+  }
+  get qtpathsExe() {
+    return this._qtpathsExe;
+  }
+  set qtpathsExe(qtpathsExe: string | undefined) {
+    this._qtpathsExe = qtpathsExe;
+  }
+  updateQmlls() {
+    this.qmlls.clearImportPaths();
+    if (this.kitPath) {
+      this.qmlls.addImportPath(path.join(this.kitPath, 'qml'));
+    } else if (this.qtpathsExe) {
+      const info = coreAPI?.getQtInfoFromPath(this.qtpathsExe);
+      if (!info) {
+        throw new Error('Could not find Qt info');
+      }
+      const qmlImportPath = info.get('QT_INSTALL_QML');
+      if (!qmlImportPath) {
+        throw new Error('Could not find QT_INSTALL_QML');
+      }
+      this.qmlls.addImportPath(qmlImportPath);
+    }
+    void this.qmlls.restart();
   }
   get folder() {
     return this._folder;

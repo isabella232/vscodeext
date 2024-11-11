@@ -8,7 +8,8 @@ import {
   getCoreApi,
   createLogger,
   initLogger,
-  telemetry
+  telemetry,
+  QtWorkspaceConfigMessage
 } from 'qt-lib';
 
 import { registerColorProvider } from '@/color-provider';
@@ -29,6 +30,11 @@ export async function activate(context: vscode.ExtensionContext) {
   telemetry.activate(context);
   projectManager = new QMLProjectManager(context);
   coreAPI = await getCoreApi();
+  if (!coreAPI) {
+    const err = 'Failed to get CoreAPI';
+    logger.error(err);
+    throw new Error(err);
+  }
 
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
@@ -36,6 +42,14 @@ export async function activate(context: vscode.ExtensionContext) {
       projectManager.addProject(project);
     }
   }
+
+  coreAPI.onValueChanged((message) => {
+    logger.debug(
+      'Received config change:',
+      message.config as unknown as string
+    );
+    processMessage(message);
+  });
 
   context.subscriptions.push(
     registerRestartQmllsCommand(),
@@ -52,4 +66,37 @@ export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
   telemetry.dispose();
   projectManager.dispose();
+}
+
+function processMessage(message: QtWorkspaceConfigMessage) {
+  try {
+    // check if workspace folder is a string. If it is, it means the global
+    // workspace
+    if (typeof message.workspaceFolder === 'string') {
+      return;
+    }
+    const project = projectManager.getProject(message.workspaceFolder);
+    if (!project) {
+      logger.error('Project not found');
+      return;
+    }
+    let updateQmlls = false;
+    const selectedKitPath = message.get<string>('selectedKitPath');
+    if (selectedKitPath !== project.kitPath) {
+      updateQmlls = true;
+      project.kitPath = selectedKitPath;
+    }
+    const selectedQtPaths = message.get<string>('selectedQtPaths');
+    if (selectedQtPaths !== project.qtpathsExe) {
+      updateQmlls = true;
+      project.qtpathsExe = selectedQtPaths;
+    }
+    if (updateQmlls) {
+      project.updateQmlls();
+    }
+  } catch (e) {
+    const err = e as Error;
+    logger.error(err.message);
+    void vscode.window.showErrorMessage(`Error: "${err.message}"`);
+  }
 }
