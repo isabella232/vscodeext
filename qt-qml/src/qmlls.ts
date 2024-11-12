@@ -185,7 +185,13 @@ export class Qmlls {
     };
 
     const clientOptions: LanguageClientOptions = {
-      documentSelector: [{ language: 'qml' }],
+      documentSelector: [
+        {
+          language: 'qml',
+          pattern: `${this._folder.uri.fsPath}/**/*`
+        }
+      ],
+      workspaceFolder: this._folder,
       outputChannel: this._channel
     };
 
