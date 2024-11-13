@@ -196,3 +196,25 @@ export function showAutoDismissNotification(
     }
   );
 }
+
+export async function fetchWithAbort(
+  url: string,
+  options: { controller: AbortController; timeout?: number }
+) {
+  const controller = options.controller;
+  const timeout = options.timeout;
+
+  if (timeout) {
+    setTimeout(() => {
+      if (!controller.signal.aborted) {
+        controller.abort();
+      }
+    }, timeout);
+  }
+  return fetch(url, { signal: controller.signal }).catch((error) => {
+    if (controller.signal.aborted) {
+      return undefined;
+    }
+    throw error;
+  });
+}

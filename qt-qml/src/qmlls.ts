@@ -42,33 +42,57 @@ export enum DecisionCode {
 }
 
 export async function fetchAssetAndDecide(options?: {
-  doNotAsk: true;
+  doNotAsk?: true;
+  silent?: boolean;
 }): Promise<{
   code: DecisionCode;
   asset?: installer.AssetWithTag;
 }> {
-  try {
-    logger.info('Fetching release information');
-    const asset = await installer.fetchAssetToInstall();
-    const status = installer.checkStatusAgainst(asset);
-    logger.info('Status Check: ', status.message);
-
-    if (!status.shouldInstall) {
-      return { code: DecisionCode.AlreadyUpToDate, asset };
-    }
-
-    if (options?.doNotAsk !== true) {
-      if (!(await installer.getUserConsent())) {
-        logger.info('User declined to install qmlls');
+  const task = async (
+    _?: vscode.Progress<{ message?: string; increment?: number }>,
+    token?: vscode.CancellationToken
+  ) => {
+    try {
+      logger.info('Fetching release information');
+      const controller = new AbortController();
+      if (token) {
+        token.onCancellationRequested(() => {
+          controller.abort();
+        });
+      }
+      const asset = await installer.fetchAssetToInstall(controller);
+      if (!asset) {
         return { code: DecisionCode.UserDeclined };
       }
-    }
+      const status = installer.checkStatusAgainst(asset);
+      logger.info('Status Check: ', status.message);
 
-    return { code: DecisionCode.NeedToUpdate, asset };
-  } catch (error) {
-    logger.warn(isError(error) ? error.message : String(error));
-    return { code: DecisionCode.ErrorOccured };
+      if (!status.shouldInstall) {
+        return { code: DecisionCode.AlreadyUpToDate, asset };
+      }
+
+      if (options?.doNotAsk !== true) {
+        if (!(await installer.getUserConsent())) {
+          logger.info('User declined to install qmlls');
+          return { code: DecisionCode.UserDeclined };
+        }
+      }
+      return { code: DecisionCode.NeedToUpdate, asset };
+    } catch (error) {
+      logger.warn(isError(error) ? error.message : String(error));
+      return { code: DecisionCode.ErrorOccured };
+    }
+  };
+  if (options?.silent === true) {
+    return task();
   }
+
+  const progressOptions = {
+    title: 'Fetching QML Language Server information',
+    location: vscode.ProgressLocation.Notification,
+    cancellable: true
+  };
+  return vscode.window.withProgress(progressOptions, task);
 }
 
 export class Qmlls {
@@ -104,7 +128,8 @@ export class Qmlls {
     }
   }
   public static async checkAssetAndDecide() {
-    const result = await fetchAssetAndDecide();
+    // Do not show the progress bar during the startup
+    const result = await fetchAssetAndDecide({ silent: true });
     if (result.code === DecisionCode.NeedToUpdate && result.asset) {
       await Qmlls.install(result.asset);
     }

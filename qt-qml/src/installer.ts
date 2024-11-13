@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { spawnSync } from 'child_process';
 
-import { UserLocalDir, OSExeSuffix } from 'qt-lib';
+import { UserLocalDir, OSExeSuffix, fetchWithAbort } from 'qt-lib';
 import * as unzipper from '@/unzipper';
 import * as downloader from '@/downloader';
 
@@ -104,9 +104,15 @@ export async function install(asset: AssetWithTag) {
   );
 }
 
-export async function fetchAssetToInstall() {
-  const signal = AbortSignal.timeout(ReleaseInfoTimeout);
-  const res = await fetch(ReleaseInfoUrl, { signal });
+export async function fetchAssetToInstall(controller: AbortController) {
+  const res = await fetchWithAbort(ReleaseInfoUrl, {
+    controller: controller,
+    timeout: ReleaseInfoTimeout
+  });
+  if (!res) {
+    // Aborted
+    return;
+  }
   if (!res.ok) {
     throw new Error(`Unexpected HTTP status, code = ${res.status.toFixed(0)}`);
   }
