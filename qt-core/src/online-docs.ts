@@ -4,8 +4,9 @@
 import * as vscode from 'vscode';
 
 import { EXTENSION_ID } from '@/constants';
-import { telemetry } from 'qt-lib';
+import { telemetry, createLogger, isError } from 'qt-lib';
 
+const logger = createLogger('online-docs');
 interface SearchItem {
   link: string;
   snippet: string;
@@ -40,14 +41,52 @@ function getCurrentWord(): string {
   return '';
 }
 
-async function tryToOpenDocumentationFor(word: string) {
+async function fetchWithAbort(
+  url: string,
+  options: { controller: AbortController; timeout?: number }
+) {
+  const controller = options.controller;
+  const timeout = options.timeout;
+
+  if (timeout) {
+    setTimeout(() => {
+      if (!controller.signal.aborted) {
+        controller.abort();
+      }
+    }, timeout);
+  }
+  return fetch(url, { signal: controller.signal }).catch((error) => {
+    if (controller.signal.aborted) {
+      return undefined;
+    }
+    throw error;
+  });
+}
+
+async function tryToOpenDocumentationFor(
+  word: string,
+  token?: vscode.CancellationToken
+) {
   if (!word) {
     return false;
   }
   const link = `https://doc.qt.io/qt-6/${word.toLowerCase()}.html`;
 
-  const response = await fetch(link);
-  if (response.ok) {
+  if (token?.isCancellationRequested) {
+    return false;
+  }
+  const controller = new AbortController();
+  if (token) {
+    token.onCancellationRequested(() => {
+      controller.abort();
+    });
+  }
+  const response = await fetchWithAbort(link, {
+    controller: controller,
+    timeout: 5000
+  });
+
+  if (response?.ok) {
     openInBrowser(link);
     return true;
   }
@@ -82,63 +121,82 @@ async function search() {
 
   searchAndAskforResult(value);
 }
+
+async function searchWithEngine(
+  value: string,
+  token?: vscode.CancellationToken
+) {
+  const link = 'https://d24zn9cw9ofw9u.cloudfront.net?q=';
+  const controller = new AbortController();
+  if (token) {
+    token.onCancellationRequested(() => {
+      controller.abort();
+    });
+  }
+  const response = await fetchWithAbort(link + value, {
+    controller: controller,
+    timeout: 5000
+  });
+
+  if (token?.isCancellationRequested) {
+    return;
+  }
+  if (!response?.ok) {
+    throw new Error('Network response: ' + response?.status);
+  }
+
+  return (await response.json()) as SearchResponse;
+}
+
 function searchAndAskforResult(value: string) {
   let quickPickItems: {
     label: string;
     link: string;
     detail: string;
   }[] = [];
-  void vscode.window
-    .withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Searching...',
-        cancellable: true
-      },
-      async (progress, token) => {
-        void progress;
-        token.onCancellationRequested(() => {
-          return;
-        });
-        if (await tryToOpenDocumentationFor(value)) {
-          return;
-        }
-        try {
-          const searchLink = 'https://d24zn9cw9ofw9u.cloudfront.net?q=';
-          const searchResponse = await fetch(searchLink + value);
-          if (!searchResponse.ok) {
-            throw new Error('Network response: ' + searchResponse.status);
-          }
-
-          const searchResponseJson =
-            (await searchResponse.json()) as SearchResponse;
-          if (!searchResponseJson.items) {
-            void vscode.window.showInformationMessage(
-              'No search results found.'
-            );
-            return;
-          }
-          quickPickItems = searchResponseJson.items.map((item) => ({
-            label: item.title,
-            link: item.link,
-            detail: item.snippet
-          }));
-        } catch (error) {
-          console.error('Error:', error);
-        }
-      }
-    )
-    .then(async () => {
-      if (quickPickItems.length === 0) {
+  const task = async (
+    _: vscode.Progress<{ message?: string; increment?: number }>,
+    token: vscode.CancellationToken
+  ) => {
+    try {
+      if (await tryToOpenDocumentationFor(value, token)) {
         return;
       }
-      const selected = await vscode.window.showQuickPick(quickPickItems, {
-        placeHolder: 'Select a search result'
-      });
-      if (selected) {
-        openInBrowser(selected.link);
+      const searchResponseJson = await searchWithEngine(value, token);
+      if (token.isCancellationRequested) {
+        return;
       }
+      if (!searchResponseJson?.items) {
+        void vscode.window.showInformationMessage('No search results found.');
+        return;
+      }
+      quickPickItems = searchResponseJson.items.map((item) => ({
+        label: item.title,
+        link: item.link,
+        detail: item.snippet
+      }));
+    } catch (error) {
+      const err = isError(error) ? error.message : String(error);
+      logger.error(err);
+      void vscode.window.showErrorMessage(`Error: "${err}"`);
+    }
+  };
+  const options = {
+    location: vscode.ProgressLocation.Notification,
+    title: 'Searching...',
+    cancellable: true
+  };
+  void vscode.window.withProgress(options, task).then(async () => {
+    if (quickPickItems.length === 0) {
+      return;
+    }
+    const selected = await vscode.window.showQuickPick(quickPickItems, {
+      placeHolder: 'Select a search result'
     });
+    if (selected) {
+      openInBrowser(selected.link);
+    }
+  });
 }
 
 function openHomepage() {
