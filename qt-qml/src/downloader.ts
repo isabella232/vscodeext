@@ -14,13 +14,17 @@ export async function download(
 ) {
   let downloadUrl = url;
   const MaxRedirects = 10;
+  const controller = new AbortController();
+  token?.onCancellationRequested(() => {
+    controller.abort();
+  });
 
   for (let i = 0; i < MaxRedirects; ++i) {
     if (!downloadUrl) {
       throw Error('Invalid download URL');
     }
 
-    const res = await getHttps(downloadUrl);
+    const res = await getHttps(downloadUrl, controller);
     if (!res.statusCode) {
       throw Error(`Invalid status code ${res.statusCode}`);
     }
@@ -81,9 +85,9 @@ async function downloadOctetStream(
   });
 }
 
-async function getHttps(url: string) {
+async function getHttps(url: string, controller: AbortController) {
   return new Promise<http.IncomingMessage>((resolve, reject) => {
-    const request = https.get(url, resolve);
+    const request = https.get(url, { signal: controller.signal }, resolve);
     request.on('error', reject);
   });
 }
