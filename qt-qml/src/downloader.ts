@@ -50,11 +50,9 @@ async function downloadOctetStream(
       return;
     }
 
-    if (token) {
-      token.onCancellationRequested(() => {
-        reject(new Error('User canceled'));
-      });
-    }
+    token?.onCancellationRequested(() => {
+      reject(new Error('User canceled'));
+    });
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
       reject(new Error(`Unexpected status, ${res.statusCode}`));

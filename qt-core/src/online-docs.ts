@@ -54,11 +54,9 @@ async function tryToOpenDocumentationFor(
     return false;
   }
   const controller = new AbortController();
-  if (token) {
-    token.onCancellationRequested(() => {
-      controller.abort();
-    });
-  }
+  token?.onCancellationRequested(() => {
+    controller.abort();
+  });
   const response = await fetchWithAbort(link, {
     controller: controller,
     timeout: 5000
@@ -106,11 +104,9 @@ async function searchWithEngine(
 ) {
   const link = 'https://d24zn9cw9ofw9u.cloudfront.net?q=';
   const controller = new AbortController();
-  if (token) {
-    token.onCancellationRequested(() => {
-      controller.abort();
-    });
-  }
+  token?.onCancellationRequested(() => {
+    controller.abort();
+  });
   const response = await fetchWithAbort(link + value, {
     controller: controller,
     timeout: 5000

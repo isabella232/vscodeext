@@ -55,11 +55,9 @@ export async function fetchAssetAndDecide(options?: {
     try {
       logger.info('Fetching release information');
       const controller = new AbortController();
-      if (token) {
-        token.onCancellationRequested(() => {
-          controller.abort();
-        });
-      }
+      token?.onCancellationRequested(() => {
+        controller.abort();
+      });
       const asset = await installer.fetchAssetToInstall(controller);
       if (!asset) {
         return { code: DecisionCode.UserDeclined };
