@@ -12,11 +12,35 @@
 
     \title Register Qt installations
 
-    The Qt extensions check whether you have a Qt installation folder at the
-    default path and offer to save it in \l{Qt settings}.Then, they ask you
-    whether you want to register the Qt versions they found.
+    To develop with Qt, you need at least one Qt version. You can install Qt in
+    many ways:
 
-    If you installed Qt somewhere else, register your Qt installation:
+    \list
+        \li \l{Get and Install Qt with Qt Online Installer}{Use \QOI}
+        \li Use a package manager
+        \li \l{Building Qt Sources}{Build Qt from sources}
+    \endlist
+
+    \section1 Automatic registration
+
+    \QVSC checks whether you have a Qt installation folder at the default path
+    and offers to save it in \l{Qt settings}. Select \uicontrol Use to save it
+    and to register the Qt versions in it.
+
+    Also, if you install Qt from \c vcpkg, \QVSC detects it and offers to
+    create a CMake kit for it. It then uses tools, such as \QD, and paths
+    from \c vcpkg. Set the \c {QT_QPA_PLATFORM_PLUGIN_PATH} and
+    \c {QML_IMPORT_PATH} environment variables in the \e launch.json file to
+    configure the Qt installation.
+
+    If you did not install Qt at the default path, or the \c vcpkg installation
+    is not detected automatically, register your Qt versions as described in the
+    following sections.
+
+    \section1 \QOI installations
+
+    To register a Qt that you installed with \QOI to a folder that is not on the
+    default path:
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and select
@@ -28,6 +52,20 @@
     The command creates CMake kits for each installed Qt version.
 
     \image vscodeext-kits.webp {CMake kits for installed Qt versions}
+
+    \section1 Other installations
+
+    To register a Qt that you installed from a package manager or that you built
+    from sources:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Register Qt (qtpaths or qmake)}.
+        \li Select the \c qmake or \c qtpaths executable,
+            and then select \uicontrol {Select}.
+    \endlist
+
+    The command creates a CMake kit for qtpaths.
 
     \section1 Scan for Qt kits
 
