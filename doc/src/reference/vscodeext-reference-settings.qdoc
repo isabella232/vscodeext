@@ -14,9 +14,25 @@
     To view and change Qt settings, go to \uicontrol {Command Palette} and select
     \uicontrol {Qt: Open Qt Settings}.
 
-    \image vscodeext-qt-settings.webp {Qt Settings}
+    \section1 Qt C++ settings
+
+    \image vscodeext-qt-settings-cpp.webp {Qt Settings}
+
+    Settings for the C++ language.
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li Do Not Ask for CMake path
+        \li Lets CMake Tools search the PATH environment variable and make some
+            educated guesses on where to find CMake.
+    \endtable
 
     \section1 Qt Core settings
+
+    \image vscodeext-qt-settings-core.webp {Qt Settings}
 
     Settings for the common features of the Qt extensions.
 
@@ -37,20 +53,9 @@
         \li Path to the folder where you installed Qt.
     \endtable
 
-    \section1 Qt UI settings
-
-    Settings for handling \e {.ui} files.
-
-    \table
-    \header
-        \li Setting
-        \li Description
-    \row
-        \li Custom Widgets Designer Exe Path
-        \li Path to the folder where you installed \QD.
-    \endtable
-
     \section1 \QMLLS settings
+
+    \image vscodeext-qt-settings-qml.webp {Qt Settings}
 
     Settings for \l{\QMLLS Reference}{\QMLLS}.
 
@@ -71,5 +76,20 @@
     \row
         \li Verbose Output
         \li Shows verbose output from \QMLLS.
+    \endtable
+
+    \section1 Qt UI settings
+
+    \image vscodeext-qt-settings-ui.webp {Qt Settings}
+
+    Settings for handling \e {.ui} files.
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li Custom Widgets Designer Exe Path
+        \li Path to the folder where you installed \QD.
     \endtable
 */
