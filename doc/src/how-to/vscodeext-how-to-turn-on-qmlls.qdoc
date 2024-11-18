@@ -13,7 +13,8 @@
     \title Turn on \QMLLS
 
     \l{\QMLLS} offers code completion and issues warnings for QML. \QVSC supports
-    \QMLLS from Qt 6.8.0, and later.
+    \QMLLS from Qt 6.8.0, and later. You can check for \QMLLS updates and
+    download the latest version.
 
     To turn on \QMLLS:
 
@@ -24,6 +25,15 @@
             \uicontrol {Run qmlls when activating an extension}.
     \endlist
 
+    \section1 Check for updates
+
+    To install the latest \QMLLS version, go to \uicontrol {Command Palette},
+    and then select \uicontrol {Qt: Check for \QMLLS update}.
+
+    If \QVSC finds a newer version of \QMLLS, it offers to install it.
+    You can also go to \uicontrol {Command Palette}, and then select
+    \uicontrol {Qt: Download the most recent \QMLLS language server}.
+
     \section1 Set \QMLLS location
 
     To use \QMLLS when you develop with an older Qt version than Qt 6.8.0, set
@@ -31,8 +41,17 @@
 
     \section1 Configure \QMLLS output
 
-    To collect trace output from \QMLLS and to show verbose output from it,
-    go to \uicontrol {Settings}.
+    To collect trace output from \QMLLS, go to \uicontrol {Settings}, and then
+    select an option in \uicontrol {Handle LSP trace}.
+
+    To show verbose output from \QMLLS, go to \uicontrol {Settings}, and then
+    select \uicontrol {Run qmlls with --verbose option}.
+
+    \section1 Restart \QMLLS
+
+    To restart \QMLLS, go to \uicontrol {Command Palette}, and then select
+    \uicontrol {Qt: Restart \QMLLS}.
+
 
     \sa {Qt settings}
 */
