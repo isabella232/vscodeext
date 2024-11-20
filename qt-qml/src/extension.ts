@@ -81,15 +81,23 @@ function processMessage(message: QtWorkspaceConfigMessage) {
       return;
     }
     let updateQmlls = false;
-    const selectedKitPath = message.get<string>('selectedKitPath');
-    if (selectedKitPath !== project.kitPath) {
-      updateQmlls = true;
-      project.kitPath = selectedKitPath;
-    }
-    const selectedQtPaths = message.get<string>('selectedQtPaths');
-    if (selectedQtPaths !== project.qtpathsExe) {
-      updateQmlls = true;
-      project.qtpathsExe = selectedQtPaths;
+    for (const key of message.config.keys()) {
+      if (key === 'selectedKitPath') {
+        const selectedKitPath = message.get<string>('selectedKitPath');
+        if (selectedKitPath !== project.kitPath) {
+          updateQmlls = true;
+          project.kitPath = selectedKitPath;
+        }
+        continue;
+      }
+      if (key === 'selectedQtPaths') {
+        const selectedQtPaths = message.get<string>('selectedQtPaths');
+        if (selectedQtPaths !== project.qtpathsExe) {
+          updateQmlls = true;
+          project.qtpathsExe = selectedQtPaths;
+        }
+        continue;
+      }
     }
     if (updateQmlls) {
       project.updateQmlls();

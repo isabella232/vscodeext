@@ -138,15 +138,18 @@ function processMessage(message: QtWorkspaceConfigMessage) {
       return;
     }
   }
+  for (const key of message.config.keys()) {
+    if (key === QtInsRootConfigName) {
+      const value = message.get<string>(QtInsRootConfigName) ?? '';
+      void kitManager.onQtInstallationRootChanged(value, project?.folder);
+      continue;
+    }
 
-  const qtInsRoot = message.get<string>(QtInsRootConfigName);
-  if (qtInsRoot !== undefined) {
-    void kitManager.onQtInstallationRootChanged(qtInsRoot, project?.folder);
-  }
-  const additionalQtPaths = message.get<QtAdditionalPath[]>(
-    AdditionalQtPathsName
-  );
-  if (additionalQtPaths !== undefined) {
-    kitManager.onQtPathsChanged(additionalQtPaths, project?.folder);
+    if (key === AdditionalQtPathsName) {
+      const additionalQtPaths =
+        message.get<QtAdditionalPath[]>(AdditionalQtPathsName) ?? [];
+      kitManager.onQtPathsChanged(additionalQtPaths, project?.folder);
+      continue;
+    }
   }
 }

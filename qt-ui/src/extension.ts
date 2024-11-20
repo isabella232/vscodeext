@@ -106,17 +106,26 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     logger.error('Project not found');
     return;
   }
-  const selectedKitPath = message.get<string>('selectedKitPath');
-  if (selectedKitPath !== project.binDir) {
-    void project.setBinDir(selectedKitPath);
-  }
-  const selectedQtPaths = message.get<string>('selectedQtPaths');
-  if (selectedQtPaths !== project.qtpathsExe) {
-    project.qtpathsExe = selectedQtPaths;
-  }
-  if (message.config.has('workspaceType')) {
-    project.workspaceType = message.config.get(
-      'workspaceType'
-    ) as QtWorkspaceType;
+
+  for (const key of message.config.keys()) {
+    if (key === 'selectedKitPath') {
+      const selectedKitPath = message.get<string>('selectedKitPath');
+      if (selectedKitPath !== project.binDir) {
+        void project.setBinDir(selectedKitPath);
+      }
+      continue;
+    }
+    if (key === 'selectedQtPaths') {
+      const selectedQtPaths = message.get<string>('selectedQtPaths');
+      if (selectedQtPaths !== project.qtpathsExe) {
+        project.qtpathsExe = selectedQtPaths;
+      }
+      continue;
+    }
+    if (key === 'workspaceType') {
+      project.workspaceType = message.config.get(
+        'workspaceType'
+      ) as QtWorkspaceType;
+    }
   }
 }
