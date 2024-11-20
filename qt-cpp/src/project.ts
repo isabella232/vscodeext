@@ -26,20 +26,26 @@ export async function createCppProject(
   if (api) {
     cmakeProject = await api.getProject(folder.uri);
   }
-  return Promise.resolve(new CppProject(folder, context, cmakeProject));
+  const buildDir = await cmakeProject?.getBuildDirectory();
+  return Promise.resolve(
+    new CppProject(folder, context, cmakeProject, buildDir)
+  );
 }
 
 // Project class represents a workspace folder in the extension.
 export class CppProject implements Project {
   private readonly _stateManager: WorkspaceStateManager;
   private readonly _cmakeProject: cmakeApi.Project | undefined;
+  private _buildDir: string | undefined;
   constructor(
     private readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext,
-    cmakeProject: cmakeApi.Project | undefined
+    cmakeProject: cmakeApi.Project | undefined,
+    buildDir: string | undefined
   ) {
     this._cmakeProject = cmakeProject;
     this._stateManager = new WorkspaceStateManager(_context, _folder);
+    this._buildDir = buildDir;
 
     if (this._cmakeProject) {
       this._cmakeProject.onSelectedConfigurationChanged(
@@ -56,6 +62,20 @@ export class CppProject implements Project {
           }
         }
       );
+      this._cmakeProject.onCodeModelChanged(async () => {
+        const prevbuildDir = this._buildDir;
+        const currentBuildDir = await this._cmakeProject?.getBuildDirectory();
+        if (prevbuildDir !== currentBuildDir) {
+          logger.info(
+            'Build directory changed:',
+            currentBuildDir ?? 'undefined'
+          );
+          this._buildDir = currentBuildDir;
+          const message = new QtWorkspaceConfigMessage(this.folder);
+          message.config.set('buildDir', currentBuildDir);
+          coreAPI?.update(message);
+        }
+      });
     }
   }
 
@@ -64,6 +84,9 @@ export class CppProject implements Project {
   }
   get folder() {
     return this._folder;
+  }
+  get buildDir() {
+    return this._buildDir;
   }
 
   dispose() {

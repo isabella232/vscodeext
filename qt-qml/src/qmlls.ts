@@ -97,6 +97,7 @@ export class Qmlls {
   private readonly _importPaths = new Set<string>();
   private _client: LanguageClient | undefined;
   private _channel: vscode.OutputChannel | undefined;
+  private _buildDir: string | undefined;
 
   constructor(readonly _folder: vscode.WorkspaceFolder) {
     vscode.workspace.onDidChangeConfiguration((event) => {
@@ -104,6 +105,12 @@ export class Qmlls {
         void this.restart();
       }
     });
+  }
+  set buildDir(buildDir: string | undefined) {
+    this._buildDir = buildDir;
+  }
+  get buildDir() {
+    return this._buildDir;
   }
 
   addImportPath(importPath: string) {
@@ -225,6 +232,11 @@ export class Qmlls {
     if (useQmlImportPathEnvVar) {
       args.push('-E');
     }
+
+    if (this._buildDir) {
+      args.push(`-b${this._buildDir}`);
+    }
+
     const additionalImportPaths = configs.get<string[]>(
       'additionalImportPaths',
       []

@@ -98,6 +98,13 @@ function processMessage(message: QtWorkspaceConfigMessage) {
         }
         continue;
       }
+      if (key === 'buildDir') {
+        const buildDir = message.get<string>('buildDir');
+        if (buildDir !== project.buildDir) {
+          updateQmlls = true;
+          project.buildDir = buildDir;
+        }
+      }
     }
     if (updateQmlls) {
       project.updateQmlls();

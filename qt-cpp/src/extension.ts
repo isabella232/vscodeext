@@ -119,6 +119,7 @@ export async function initCoreValues() {
     const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
     message.config.set('selectedQtPaths', selectedQtPaths);
     message.config.set('workspaceType', QtWorkspaceType.CMakeExt);
+    message.config.set('buildDir', project.buildDir ?? '');
     logger.info('Updating coreAPI with message:', message as unknown as string);
     coreAPI.update(message);
   }

@@ -48,6 +48,7 @@ export class QMLProject implements Project {
   _qmlls: Qmlls;
   _qtpathsExe: string | undefined;
   _kitPath: string | undefined;
+  _buildDir: string | undefined;
   public constructor(
     readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext
@@ -84,6 +85,13 @@ export class QMLProject implements Project {
       this.qmlls.addImportPath(qmlImportPath);
     }
     void this.qmlls.restart();
+  }
+  set buildDir(buildDir: string | undefined) {
+    this._buildDir = buildDir;
+    this.qmlls.buildDir = buildDir;
+  }
+  get buildDir() {
+    return this._buildDir;
   }
   get folder() {
     return this._folder;
