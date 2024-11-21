@@ -21,3 +21,4 @@ package-lock.json
 extension_packs/**
 ../**/*
 .eslintcache
+tsconfig.tsbuildinfo

@@ -36,7 +36,7 @@ async function execCmd(command) {
   });
 }
 
-await execCmd('npx tsc --noEmit').then(
+await execCmd('npx tsc --incremental --noEmit').then(
   (stdout) => {
     if (stdout.length > 0) {
       console.log(stdout);

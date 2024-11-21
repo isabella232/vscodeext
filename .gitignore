@@ -13,3 +13,4 @@ build
 src/test/util/dependencies
 .cache
 .eslintcache
+tsconfig.tsbuildinfo

@@ -14,7 +14,7 @@
     "all_dev:qt-qml": "npm run ci:qt-qml && npm run pretest:qt-qml && npm run package:qt-qml && npm run install-ext:qt-qml",
     "all_dev:qt-cpp": "npm run ci:qt-cpp && npm run pretest:qt-cpp && npm run package:qt-cpp && npm run install-ext:qt-cpp",
     "all_dev:qt-ui": "npm run ci:qt-ui && npm run pretest:qt-ui && npm run package:qt-ui && npm run install-ext:qt-ui",
-    "pretest": "npm run prettierWrite && npx tsc --noEmit && eslint . --fix --cache",
+    "pretest": "npm run prettierWrite && npx tsc --incremental --noEmit && eslint . --fix --cache",
     "pretest:qt-core": "cd qt-core && npm run pretest",
     "pretest:qt-qml": "cd qt-qml && npm run pretest",
     "pretest:qt-cpp": "cd qt-cpp && npm run pretest",

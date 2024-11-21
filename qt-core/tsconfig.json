@@ -13,6 +13,7 @@
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
     "allowUnusedLabels": false,
+    "incremental": true,
     "allowUnreachableCode": false,
     "noImplicitReturns": true,
     "exactOptionalPropertyTypes": true,
