@@ -100,10 +100,30 @@ async function searchForDesignerInQtInfo(info: QtInfo) {
     'QT_HOST_LIBEXECS',
     'QT_INSTALL_LIBEXECS'
   ];
-  for (const key of keysToCheck) {
-    const value = info.get(key);
-    if (value) {
-      const designerExePath = getDesignerExePath(value);
+
+  const paths = keysToCheck
+    .map((key) => info.get(key))
+    .filter((p) => {
+      return p !== undefined;
+    });
+
+  const addVcpkgPaths = (p: string[]) => {
+    const keys = ['QT_INSTALL_PREFIX', 'QT_HOST_PREFIX'];
+    for (const key of keys) {
+      const value = info.get(key);
+      if (value) {
+        const vcpkgPath = path.join(value, 'tools', 'qttools', 'bin');
+        p.push(vcpkgPath);
+      }
+    }
+  };
+  // It is a special case for vcpkg because on some platforms, Designer is
+  // installed in a different location
+  addVcpkgPaths(paths);
+
+  for (const p of paths) {
+    if (p) {
+      const designerExePath = getDesignerExePath(p);
       if (await exists(designerExePath)) {
         return designerExePath;
       }
