@@ -11,8 +11,10 @@ import { getExtensionVersion } from './common';
 function main() {
   program.option('-d, --dir <string>', 'Path to target extension directory');
   program.option('-n, --name <string>', 'Name of the extension');
+  program.option('--profile <string>', 'Profile to install package');
   program.parse(process.argv);
   const options = program.opts();
+  const profile = options.profile as string;
   const targetExtensionRoot = options.dir as string;
   const extensionName = options.name as string;
 
@@ -44,7 +46,12 @@ function main() {
     );
   }
 
-  execSync(`code --install-extension "${extension}" --force`, {
+  let profileArg = '';
+  if (profile) {
+    profileArg = ` --profile="${profile}"`;
+  }
+
+  execSync(`code --install-extension "${extension}" --force${profileArg}`, {
     cwd: outputDir,
     stdio: 'inherit'
   });
