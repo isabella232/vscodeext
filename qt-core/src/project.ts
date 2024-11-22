@@ -35,6 +35,7 @@ export async function createCoreProject(
 
 // Project class represents a workspace folder in the extension.
 export class CoreProject implements Project {
+  private readonly _disposables: vscode.Disposable[] = [];
   private readonly _stateManager: WorkspaceStateManager;
   private _qtInstallationRoot: string | undefined;
   constructor(
@@ -42,7 +43,7 @@ export class CoreProject implements Project {
     readonly _context: vscode.ExtensionContext
   ) {
     this._stateManager = new WorkspaceStateManager(_context, _folder);
-    this.watchWorkspaceFolderConfig(_context, _folder);
+    this.watchWorkspaceFolderConfig(_folder);
   }
   set qtInstallationRoot(value: string) {
     this._qtInstallationRoot = value;
@@ -61,44 +62,41 @@ export class CoreProject implements Project {
     return this.stateManager.reset();
   }
 
-  private watchWorkspaceFolderConfig(
-    context: vscode.ExtensionContext,
-    folder: vscode.WorkspaceFolder
-  ) {
-    context.subscriptions.push(
-      vscode.workspace.onDidChangeConfiguration(
-        (e: vscode.ConfigurationChangeEvent) => {
-          void e;
-          const previousQtInsRoot = this.stateManager.getQtInstallationRoot();
-          const currentQtInsRoot =
-            CoreProjectManager.getWorkspaceFolderQtInsRoot(folder);
-          if (currentQtInsRoot !== previousQtInsRoot) {
-            void this.stateManager.setQtInstallationRoot(currentQtInsRoot);
-            onQtInsRootUpdated(currentQtInsRoot, folder);
-          }
-          const previousAdditionalQtPaths =
-            this.stateManager.getAdditionalQtPaths();
-          const currentAdditionalQtPaths =
-            CoreProjectManager.getWorkspaceFolderAdditionalQtPaths(folder);
-
-          if (
-            !isEqual(
-              currentAdditionalQtPaths.sort(),
-              previousAdditionalQtPaths.sort()
-            )
-          ) {
-            void this.stateManager.setAdditionalQtPaths(
-              currentAdditionalQtPaths
-            );
-            onAdditionalQtPathsUpdated(currentAdditionalQtPaths, folder);
-          }
+  private watchWorkspaceFolderConfig(folder: vscode.WorkspaceFolder) {
+    const eventHandler = vscode.workspace.onDidChangeConfiguration(
+      (e: vscode.ConfigurationChangeEvent) => {
+        void e;
+        const previousQtInsRoot = this.stateManager.getQtInstallationRoot();
+        const currentQtInsRoot =
+          CoreProjectManager.getWorkspaceFolderQtInsRoot(folder);
+        if (currentQtInsRoot !== previousQtInsRoot) {
+          void this.stateManager.setQtInstallationRoot(currentQtInsRoot);
+          onQtInsRootUpdated(currentQtInsRoot, folder);
         }
-      )
+        const previousAdditionalQtPaths =
+          this.stateManager.getAdditionalQtPaths();
+        const currentAdditionalQtPaths =
+          CoreProjectManager.getWorkspaceFolderAdditionalQtPaths(folder);
+
+        if (
+          !isEqual(
+            currentAdditionalQtPaths.sort(),
+            previousAdditionalQtPaths.sort()
+          )
+        ) {
+          void this.stateManager.setAdditionalQtPaths(currentAdditionalQtPaths);
+          onAdditionalQtPathsUpdated(currentAdditionalQtPaths, folder);
+        }
+      }
     );
+    this._disposables.push(eventHandler);
   }
 
   dispose() {
     logger.info('Disposing project:', this._folder.uri.fsPath);
+    for (const d of this._disposables) {
+      d.dispose();
+    }
   }
 }
 
@@ -108,14 +106,14 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
   constructor(override readonly context: vscode.ExtensionContext) {
     super(context, createCoreProject);
     this.globalStateManager = new GlobalStateManager(context);
-    this.watchGlobalConfig(context);
+    this.watchGlobalConfig();
 
     this.onProjectAdded((project: CoreProject) => {
       logger.info('Adding project:', project.folder.uri.fsPath);
     });
   }
-  private watchGlobalConfig(context: vscode.ExtensionContext) {
-    context.subscriptions.push(
+  private watchGlobalConfig() {
+    this._disposables.push(
       vscode.workspace.onDidChangeConfiguration(
         (e: vscode.ConfigurationChangeEvent) => {
           void e;

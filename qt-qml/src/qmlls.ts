@@ -112,17 +112,26 @@ export async function fetchAssetAndDecide(options?: {
 }
 
 export class Qmlls {
+  private readonly _disposables: vscode.Disposable[] = [];
   private readonly _importPaths = new Set<string>();
   private _client: LanguageClient | undefined;
   private _channel: vscode.OutputChannel | undefined;
   private _buildDir: string | undefined;
 
   constructor(readonly _folder: vscode.WorkspaceFolder) {
-    vscode.workspace.onDidChangeConfiguration((event) => {
+    const eventHandler = vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration(QMLLS_CONFIG, _folder)) {
         void this.restart();
       }
     });
+    this._disposables.push(eventHandler);
+  }
+  dispose() {
+    for (const d of this._disposables) {
+      d.dispose();
+    }
+    void this._client?.dispose();
+    this._channel?.dispose();
   }
   set buildDir(buildDir: string | undefined) {
     this._buildDir = buildDir;

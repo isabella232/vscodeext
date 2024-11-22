@@ -94,6 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
   telemetry.dispose();
+  projectManager.dispose();
 }
 
 function processMessage(message: QtWorkspaceConfigMessage) {

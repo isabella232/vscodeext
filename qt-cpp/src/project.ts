@@ -34,6 +34,7 @@ export async function createCppProject(
 
 // Project class represents a workspace folder in the extension.
 export class CppProject implements Project {
+  private readonly _disposables: vscode.Disposable[] = [];
   private readonly _stateManager: WorkspaceStateManager;
   private readonly _cmakeProject: cmakeApi.Project | undefined;
   private _buildDir: string | undefined;
@@ -48,34 +49,39 @@ export class CppProject implements Project {
     this._buildDir = buildDir;
 
     if (this._cmakeProject) {
-      this._cmakeProject.onSelectedConfigurationChanged(
-        async (configurationType: cmakeApi.ConfigurationType) => {
-          if (configurationType === cmakeApi.ConfigurationType.Kit) {
-            const kit = await getSelectedKit(this.folder);
-            const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
-            const message = new QtWorkspaceConfigMessage(this.folder);
-            message.config.set('selectedKitPath', selectedKitPath);
+      const onSelectedConfigurationChangedHandler =
+        this._cmakeProject.onSelectedConfigurationChanged(
+          async (configurationType: cmakeApi.ConfigurationType) => {
+            if (configurationType === cmakeApi.ConfigurationType.Kit) {
+              const kit = await getSelectedKit(this.folder);
+              const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
+              const message = new QtWorkspaceConfigMessage(this.folder);
+              message.config.set('selectedKitPath', selectedKitPath);
 
-            const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
-            message.config.set('selectedQtPaths', selectedQtPaths);
+              const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
+              message.config.set('selectedQtPaths', selectedQtPaths);
+              coreAPI?.update(message);
+            }
+          }
+        );
+      const onCodeModelChangedHandler = this._cmakeProject.onCodeModelChanged(
+        async () => {
+          const prevbuildDir = this._buildDir;
+          const currentBuildDir = await this._cmakeProject?.getBuildDirectory();
+          if (prevbuildDir !== currentBuildDir) {
+            logger.info(
+              'Build directory changed:',
+              currentBuildDir ?? 'undefined'
+            );
+            this._buildDir = currentBuildDir;
+            const message = new QtWorkspaceConfigMessage(this.folder);
+            message.config.set('buildDir', currentBuildDir);
             coreAPI?.update(message);
           }
         }
       );
-      this._cmakeProject.onCodeModelChanged(async () => {
-        const prevbuildDir = this._buildDir;
-        const currentBuildDir = await this._cmakeProject?.getBuildDirectory();
-        if (prevbuildDir !== currentBuildDir) {
-          logger.info(
-            'Build directory changed:',
-            currentBuildDir ?? 'undefined'
-          );
-          this._buildDir = currentBuildDir;
-          const message = new QtWorkspaceConfigMessage(this.folder);
-          message.config.set('buildDir', currentBuildDir);
-          coreAPI?.update(message);
-        }
-      });
+      this._disposables.push(onCodeModelChangedHandler);
+      this._disposables.push(onSelectedConfigurationChangedHandler);
     }
   }
 
@@ -91,6 +97,9 @@ export class CppProject implements Project {
 
   dispose() {
     logger.info('Disposing project:', this._folder.uri.fsPath);
+    for (const d of this._disposables) {
+      d.dispose();
+    }
   }
 }
 
@@ -98,13 +107,17 @@ export class CppProjectManager extends ProjectManager<CppProject> {
   constructor(override readonly context: vscode.ExtensionContext) {
     super(context, createCppProject);
 
-    this.onProjectAdded((project: CppProject) => {
-      logger.info('Adding project:', project.folder.uri.fsPath);
-      kitManager.addProject(project);
-    });
+    this._disposables.push(
+      this.onProjectAdded((project: CppProject) => {
+        logger.info('Adding project:', project.folder.uri.fsPath);
+        kitManager.addProject(project);
+      })
+    );
 
-    this.onProjectRemoved((project: CppProject) => {
-      kitManager.removeProject(project);
-    });
+    this._disposables.push(
+      this.onProjectRemoved((project: CppProject) => {
+        kitManager.removeProject(project);
+      })
+    );
   }
 }

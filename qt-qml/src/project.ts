@@ -101,6 +101,6 @@ export class QMLProject implements Project {
   }
   dispose() {
     logger.info('Disposing project:', this.folder.uri.fsPath);
-    void this.qmlls.stop();
+    this.qmlls.dispose();
   }
 }

@@ -27,6 +27,7 @@ export async function createUIProject(
 
 // Project class represents a workspace folder in the extension.
 export class UIProject implements Project {
+  private readonly _disposables: vscode.Disposable[] = [];
   private _workspaceType: QtWorkspaceType | undefined;
   private _binDir: string | undefined;
   private _designerClient: DesignerClient | undefined;
@@ -52,7 +53,7 @@ export class UIProject implements Project {
         );
       }
     }
-    vscode.workspace.onDidChangeConfiguration((event) => {
+    const eventHandler = vscode.workspace.onDidChangeConfiguration((event) => {
       if (
         affectsConfig(
           event,
@@ -87,6 +88,7 @@ export class UIProject implements Project {
         }
       }
     });
+    this._disposables.push(eventHandler);
   }
   getQtCustomDesignerPath() {
     return untildify(
@@ -184,5 +186,8 @@ export class UIProject implements Project {
   dispose() {
     this._designerServer.dispose();
     this._designerClient?.dispose();
+    for (const d of this._disposables) {
+      d.dispose();
+    }
   }
 }

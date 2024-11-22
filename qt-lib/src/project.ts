@@ -9,6 +9,7 @@ export interface Project {
 }
 
 export class ProjectManager<ProjectType extends Project> {
+  protected readonly _disposables: vscode.Disposable[] = [];
   projects = new Set<ProjectType>();
   private readonly _addEmitter = new vscode.EventEmitter<ProjectType>();
   private readonly _removeEmitter = new vscode.EventEmitter<ProjectType>();
@@ -99,5 +100,8 @@ export class ProjectManager<ProjectType extends Project> {
       project.dispose();
     }
     this.projects.clear();
+    for (const d of this._disposables) {
+      d.dispose();
+    }
   }
 }
