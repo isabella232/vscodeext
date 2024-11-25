@@ -58,8 +58,8 @@ export async function activate(context: vscode.ExtensionContext) {
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
       const project = await createCppProject(folder, context);
-      projectManager.addProject(project);
-      kitManager.addProject(project);
+      projectManager.addProject(project, true);
+      kitManager.addProject(project, true);
     }
   }
 

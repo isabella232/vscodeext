@@ -148,9 +148,11 @@ export class KitManager {
     this.globalStateManager = new GlobalStateManager(context);
   }
 
-  public addProject(project: CppProject) {
+  public addProject(project: CppProject, lazy = false) {
     this.projects.add(project);
-    void this.checkForQtInstallations(project);
+    if (!lazy) {
+      void this.checkForQtInstallations(project);
+    }
   }
 
   public removeProject(project: CppProject) {

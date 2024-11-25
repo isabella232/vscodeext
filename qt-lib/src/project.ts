@@ -29,9 +29,11 @@ export class ProjectManager<ProjectType extends Project> {
     this.watchProjects(context);
   }
 
-  public addProject(project: ProjectType) {
+  public addProject(project: ProjectType, lazy = false) {
     this.projects.add(project);
-    this._addEmitter.fire(project);
+    if (!lazy) {
+      this._addEmitter.fire(project);
+    }
   }
 
   public removeProject(project: ProjectType) {
