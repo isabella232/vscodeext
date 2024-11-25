@@ -5,15 +5,10 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-import {
-  getQtInsRoot,
-  getQtPathsExe,
-  getSelectedKit,
-  IsQtKit
-} from '@cmd/register-qt-path';
+import { getSelectedKit, IsQtKit } from '@cmd/register-qt-path';
 import { createLogger, telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import { coreAPI } from '@/extension';
+import { QtVersionFromKit } from '@/util/util';
 
 const logger = createLogger('natvis');
 
@@ -56,16 +51,13 @@ export function registerNatvisCommand() {
         const error = `${kit?.name} is not a Qt kit`;
         throw new Error(error);
       }
-      const qtInsRoot = getQtInsRoot(kit);
-      if (qtInsRoot) {
-        const qtVersion = qtInsRoot.includes('6.') ? '6' : '5';
-        return getNatvis(qtVersion);
-      }
-      const qtPathsExe = getQtPathsExe(kit);
-      if (qtPathsExe) {
-        const qtInfo = coreAPI?.getQtInfoFromPath(qtPathsExe);
-        const qtVersion = qtInfo?.get('QT_VERSION')?.includes('6.') ? '6' : '5';
-        return getNatvis(qtVersion);
+      const version = QtVersionFromKit(kit);
+      if (version) {
+        const majorVersion = version.split('.')[0];
+        if (!majorVersion) {
+          throw new Error('Could not determine the major version');
+        }
+        return getNatvis(majorVersion);
       }
       return undefined;
     }

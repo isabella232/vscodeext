@@ -21,7 +21,9 @@ import {
   QtAdditionalPath,
   generateDefaultQtPathsName,
   IsWindows,
-  getVCPKGRoot
+  getVCPKGRoot,
+  telemetry,
+  TelemetryEventProperties
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { CppProject } from '@/project';
@@ -29,6 +31,7 @@ import { coreAPI } from '@/extension';
 import { GlobalStateManager } from '@/state';
 import { IsQtKit } from '@cmd/register-qt-path';
 import { EXTENSION_ID } from '@/constants';
+import { QtVersionFromKit } from '@util/util';
 
 const logger = createLogger('kit-manager');
 
@@ -870,7 +873,56 @@ export async function tryToUseCMakeFromQtTools() {
       }
     });
 }
+export function analyzeKit(kit: Kit) {
+  let result: TelemetryEventProperties | undefined;
+  const toolchainType = analyzeToolchain(kit);
+  if (toolchainType) {
+    result = {
+      toolchainType: toolchainType
+    };
+  }
+  const version = QtVersionFromKit(kit);
+  if (version) {
+    result = {
+      ...result,
+      version: version
+    };
+  }
+  if (result) {
+    telemetry.sendConfig('kitInfo', result);
+  }
+}
 
+function analyzeToolchain(kit: Kit) {
+  const insPath = kit.environmentVariables?.VSCODE_QT_INSTALLATION;
+  const qtpaths = kit.environmentVariables?.VSCODE_QT_QTPATHS_EXE;
+
+  let toolchainType: string | undefined;
+
+  if (insPath) {
+    const split = insPath.split(path.sep);
+    toolchainType = split[split.length - 1];
+  } else if (qtpaths) {
+    // If the toolchain file is vcpkg.cmake, we can infer that it's a vcpkg toolchain
+    if (kit.toolchainFile) {
+      const parsed = path.parse(kit.toolchainFile);
+      if (parsed.base === 'vcpkg.cmake') {
+        toolchainType = 'vcpkg';
+      }
+    }
+    // TODO: parse qconfig.pri to get more detailed info
+    if (!toolchainType) {
+      const qtInfo = coreAPI?.getQtInfoFromPath(qtpaths);
+      toolchainType = qtInfo?.get('QMAKE_XSPEC');
+    }
+  }
+
+  if (toolchainType) {
+    return toolchainType;
+  }
+
+  return undefined;
+}
 async function setDoNotAskForCMakePath(value: boolean) {
   await vscode.workspace
     .getConfiguration(EXTENSION_ID)

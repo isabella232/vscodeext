@@ -1,6 +1,9 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import { getQtInsRoot, getQtPathsExe } from '@/commands/register-qt-path';
+import { coreAPI } from '@/extension';
+import { Kit } from '@/kit-manager';
 import * as path from 'path';
 
 /**
@@ -15,10 +18,24 @@ export function getFilenameWithoutExtension(filename: string): string {
   if (!separatedPath) {
     throw new Error('Filename is empty');
   }
-  const splittedPath = separatedPath.split('.')[0];
-  if (splittedPath === undefined) {
+  const splitPath = separatedPath.split('.')[0];
+  if (splitPath === undefined) {
     throw new Error('Filename is empty');
   }
 
-  return splittedPath;
+  return splitPath;
+}
+
+export function QtVersionFromKit(kit: Kit) {
+  const qtInsRoot = getQtInsRoot(kit);
+  if (qtInsRoot) {
+    const split = qtInsRoot.split(path.sep);
+    return split[split.length - 2];
+  }
+  const qtPathsExe = getQtPathsExe(kit);
+  if (qtPathsExe) {
+    const qtInfo = coreAPI?.getQtInfoFromPath(qtPathsExe);
+    return qtInfo?.get('QT_VERSION');
+  }
+  return undefined;
 }

@@ -13,6 +13,7 @@ import {
   getQtPathsExe,
   getSelectedKit
 } from '@cmd/register-qt-path';
+import { analyzeKit } from '@/kit-manager';
 
 const logger = createLogger('project');
 
@@ -54,6 +55,9 @@ export class CppProject implements Project {
           async (configurationType: cmakeApi.ConfigurationType) => {
             if (configurationType === cmakeApi.ConfigurationType.Kit) {
               const kit = await getSelectedKit(this.folder);
+              if (kit) {
+                analyzeKit(kit);
+              }
               const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
               const message = new QtWorkspaceConfigMessage(this.folder);
               message.config.set('selectedKitPath', selectedKitPath);
