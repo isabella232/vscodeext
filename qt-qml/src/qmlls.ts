@@ -41,6 +41,24 @@ export enum DecisionCode {
   ErrorOccured
 }
 
+export async function setDoNotAskForDownloadingQmlls(value: boolean) {
+  await vscode.workspace
+    .getConfiguration(EXTENSION_ID)
+    .update(
+      'doNotAskForQmllsDownload',
+      value,
+      vscode.ConfigurationTarget.Global
+    );
+}
+
+export function getDoNotAskForDownloadingQmlls(): boolean {
+  return (
+    vscode.workspace
+      .getConfiguration(EXTENSION_ID)
+      .get<boolean>('doNotAskForQmllsDownload') ?? false
+  );
+}
+
 export async function fetchAssetAndDecide(options?: {
   doNotAsk?: true;
   silent?: boolean;

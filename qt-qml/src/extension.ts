@@ -16,7 +16,7 @@ import { registerColorProvider } from '@/color-provider';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
 import { registerDownloadQmllsCommand } from '@cmd/download-qmlls';
 import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update';
-import { Qmlls } from '@/qmlls';
+import { getDoNotAskForDownloadingQmlls, Qmlls } from '@/qmlls';
 import { EXTENSION_ID } from '@/constants';
 import { QMLProjectManager, createQMLProject } from '@/project';
 
@@ -59,7 +59,10 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   telemetry.sendEvent(`activated`);
 
-  void Qmlls.checkAssetAndDecide();
+  const shouldCheck = !getDoNotAskForDownloadingQmlls();
+  if (shouldCheck) {
+    void Qmlls.checkAssetAndDecide();
+  }
 }
 
 export function deactivate() {

@@ -10,6 +10,7 @@ import { spawnSync } from 'child_process';
 import { UserLocalDir, OSExeSuffix, fetchWithAbort } from 'qt-lib';
 import * as unzipper from '@/unzipper';
 import * as downloader from '@/downloader';
+import { setDoNotAskForDownloadingQmlls } from '@/qmlls';
 
 const ReleaseInfoUrl = 'https://qtccache.qt.io/QMLLS/LatestRelease';
 const ReleaseInfoTimeout = 10 * 1000;
@@ -80,11 +81,19 @@ export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
 
 export async function getUserConsent(): Promise<boolean> {
   const prompt = 'Install';
+  const doNotShowAgain = 'Do not show again';
   const message =
     'A newer version of the QML language server is available. ' +
     'Do you want to install it?';
 
-  const ans = await vscode.window.showInformationMessage(message, prompt);
+  const ans = await vscode.window.showInformationMessage(
+    message,
+    prompt,
+    doNotShowAgain
+  );
+  if (ans === doNotShowAgain) {
+    void setDoNotAskForDownloadingQmlls(true);
+  }
   return ans === prompt;
 }
 
