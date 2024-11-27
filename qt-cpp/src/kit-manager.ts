@@ -765,7 +765,7 @@ export class KitManager {
       );
       if (kit.preferredGenerator) {
         kit.preferredGenerator.name = newKit.preferredGenerator.name;
-        if (kit.preferredGenerator.name == CMakeDefaultGenerator) {
+        if (kit.preferredGenerator.name.startsWith("Ninja")) {
           if (newKit.cmakeSettings) {
             if (kit.cmakeSettings == undefined) {
               kit.cmakeSettings = {};
@@ -775,7 +775,7 @@ export class KitManager {
               ...kit.cmakeSettings
             };
           }
-          // Generator 'Ninja Multi-Config' does not support platform & toolset specification
+          // Ninja generators do not support platform & toolset specification.
           kit.preferredGenerator.platform = undefined;
           kit.preferredGenerator.toolset = undefined;
         }
