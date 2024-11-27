@@ -32,7 +32,7 @@ import { EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('kit-manager');
 
-export const CMakeDefaultGenerator = 'Ninja Multi-Config';
+export const CMakeDefaultGenerator = 'Ninja';
 const CMakeToolsDir = path.join(UserLocalDir, 'CMakeTools');
 export const CMAKE_GLOBAL_KITS_FILEPATH = path.join(
   CMakeToolsDir,
@@ -313,15 +313,8 @@ export class KitManager {
     };
     const version = qtInfo.get('QT_VERSION');
     kit.name = qtInfo.name ? qtInfo.name : generateDefaultQtPathsName(qtInfo);
-
-    const preferredGenerator = qtInfo
-      .get('QMAKE_XSPEC')
-      ?.toLowerCase()
-      .includes('wasm-emscripten')
-      ? 'Ninja'
-      : CMakeDefaultGenerator;
     kit.preferredGenerator = {
-      name: preferredGenerator
+      name: CMakeDefaultGenerator
     };
     const libs = qtInfo.get('QT_INSTALL_LIBS');
     if (!libs) {
@@ -527,9 +520,6 @@ export class KitManager {
       }
     }
     const kitName = qtPath.mangleQtInstallation(qtInsRoot, installation);
-    const kitPreferredGenerator = kitName.toLowerCase().includes('wasm_')
-      ? 'Ninja'
-      : CMakeDefaultGenerator;
     let newKit: Kit = {
       name: kitName,
       environmentVariables: {
@@ -538,7 +528,7 @@ export class KitManager {
       },
       isTrusted: true,
       preferredGenerator: {
-        name: kitPreferredGenerator
+        name: CMakeDefaultGenerator
       },
       cmakeSettings: {
         QT_QML_GENERATE_QMLLS_INI: 'ON'
