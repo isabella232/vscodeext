@@ -9,15 +9,6 @@ import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '@/kit-manager';
 
 const logger = createLogger('register-qt-path');
 
-export async function checkSelectedKitandAskForKitSelection() {
-  const selectedKit = await vscode.commands.executeCommand('cmake.buildKit');
-  if (!selectedKit || selectedKit === '__unspec__') {
-    askForKitSelection();
-    return false;
-  }
-  return true;
-}
-
 export function IsQtKit(kit: Kit) {
   return IsQtInsKit(kit) || IsQtPathsKit(kit);
 }
