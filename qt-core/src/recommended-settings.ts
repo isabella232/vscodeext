@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { isMultiWorkspace, telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
@@ -19,6 +20,11 @@ export function registerSetRecommendedSettingsCommand() {
       extensionId: 'cmake',
       setting: 'options.statusBarVisibility',
       value: 'visible'
+    },
+    {
+      extensionId: 'cmake',
+      setting: 'buildDirectory',
+      value: `\${workspaceFolder}${path.sep}builds${path.sep}\${buildKit}${path.sep}\${buildType}`
     }
   ];
 
