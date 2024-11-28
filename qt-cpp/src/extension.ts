@@ -109,7 +109,7 @@ export async function initCoreValues() {
 
   for (const project of projectManager.getProjects()) {
     const folder = project.folder;
-    const kit = await getSelectedKit(folder);
+    const kit = await getSelectedKit(folder, true);
     const message = new QtWorkspaceConfigMessage(folder);
     const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
     logger.info(

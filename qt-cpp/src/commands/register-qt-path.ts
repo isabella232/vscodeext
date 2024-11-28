@@ -57,13 +57,18 @@ async function getSelectedKitName(folder?: vscode.WorkspaceFolder) {
   }
   return selectedKit;
 }
-export async function getSelectedKit(folder?: vscode.WorkspaceFolder) {
+export async function getSelectedKit(
+  folder?: vscode.WorkspaceFolder,
+  silent = false
+) {
   if (folder === undefined) {
     folder = await getActiveFolder();
   }
   const selectedKitName = await getSelectedKitName(folder);
   if (selectedKitName === undefined) {
-    askForKitSelection();
+    if (!silent) {
+      askForKitSelection();
+    }
     return undefined;
   }
 
