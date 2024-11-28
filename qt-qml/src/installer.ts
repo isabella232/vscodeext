@@ -25,6 +25,7 @@ interface Asset {
   name: string;
   size: number;
   browser_download_url: string;
+  created_at: string;
 }
 
 export interface AssetWithTag extends Asset {
@@ -146,16 +147,19 @@ export async function fetchAssetToInstall(controller: AbortController) {
 
   const prefix = `qmlls-${name}`;
 
-  for (const asset of json.assets) {
-    if (asset.name.startsWith(prefix)) {
-      return {
-        tag_name: json.tag_name,
-        ...asset
-      } as AssetWithTag;
-    }
+  const filtered = json.assets.filter((asset) => asset.name.startsWith(prefix));
+  filtered.sort((a, b) => {
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  if (filtered.length === 0) {
+    throw new Error(`Cannot find a package for the platform '${platform}'`);
   }
 
-  throw new Error(`Cannot find a package for the platform '${platform}'`);
+  return {
+    tag_name: json.tag_name,
+    ...filtered[0]
+  } as AssetWithTag;
 }
 
 async function downloadWithProgress(url: string, destPath: string) {
