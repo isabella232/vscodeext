@@ -755,7 +755,7 @@ export class KitManager {
       );
       if (kit.preferredGenerator) {
         kit.preferredGenerator.name = newKit.preferredGenerator.name;
-        if (kit.preferredGenerator.name.startsWith("Ninja")) {
+        if (kit.preferredGenerator.name.startsWith('Ninja')) {
           if (newKit.cmakeSettings) {
             if (kit.cmakeSettings == undefined) {
               kit.cmakeSettings = {};
