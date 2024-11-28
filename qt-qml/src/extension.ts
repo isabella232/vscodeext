@@ -19,6 +19,7 @@ import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update';
 import { getDoNotAskForDownloadingQmlls, Qmlls } from '@/qmlls';
 import { EXTENSION_ID } from '@/constants';
 import { QMLProjectManager, createQMLProject } from '@/project';
+import { registerResetCommand } from '@cmd/reset';
 
 export let projectManager: QMLProjectManager;
 export let coreAPI: CoreAPI | undefined;
@@ -55,7 +56,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerRestartQmllsCommand(),
     registerCheckQmllsUpdateCommand(),
     registerDownloadQmllsCommand(),
-    registerColorProvider()
+    registerColorProvider(),
+    registerResetCommand()
   );
   telemetry.sendEvent(`activated`);
 
