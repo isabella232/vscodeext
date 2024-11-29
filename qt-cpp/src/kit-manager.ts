@@ -262,17 +262,17 @@ export class KitManager {
       }
     );
   }
-  public onQtPathsChanged(
+  public async onQtPathsChanged(
     additionalQtPaths: QtAdditionalPath[],
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
-    void vscode.window.withProgress(
+    return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
         title: 'Updating kits'
       },
       async () => {
-        await this.updateQtPathsQtKits(additionalQtPaths, workspaceFolder);
+        return this.updateQtPathsQtKits(additionalQtPaths, workspaceFolder);
       }
     );
   }

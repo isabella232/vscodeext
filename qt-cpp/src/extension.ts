@@ -82,9 +82,9 @@ export async function activate(context: vscode.ExtensionContext) {
     wasmStartTaskProvider
   );
 
-  coreAPI?.onValueChanged((message) => {
+  coreAPI?.onValueChanged(async (message) => {
     logger.info('Received config change:', message.config as unknown as string);
-    processMessage(message);
+    return processMessage(message);
   });
   void tryToUseCMakeFromQtTools();
   await kitManager.checkForAllQtInstallations();
@@ -125,7 +125,7 @@ export async function initCoreValues() {
   }
 }
 
-function processMessage(message: QtWorkspaceConfigMessage) {
+async function processMessage(message: QtWorkspaceConfigMessage) {
   // check if workspace folder is a string
   let project: CppProject | undefined;
   if (typeof message.workspaceFolder === 'string') {
@@ -142,14 +142,14 @@ function processMessage(message: QtWorkspaceConfigMessage) {
   for (const key of message.config.keys()) {
     if (key === QtInsRootConfigName) {
       const value = message.get<string>(QtInsRootConfigName) ?? '';
-      void kitManager.onQtInstallationRootChanged(value, project?.folder);
+      await kitManager.onQtInstallationRootChanged(value, project?.folder);
       continue;
     }
 
     if (key === AdditionalQtPathsName) {
       const additionalQtPaths =
         message.get<QtAdditionalPath[]>(AdditionalQtPathsName) ?? [];
-      kitManager.onQtPathsChanged(additionalQtPaths, project?.folder);
+      await kitManager.onQtPathsChanged(additionalQtPaths, project?.folder);
       continue;
     }
   }
