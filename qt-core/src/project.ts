@@ -11,7 +11,8 @@ import {
   GlobalWorkspace,
   QtInsRootConfigName,
   QtAdditionalPath,
-  compareQtAdditionalPath
+  compareQtAdditionalPath,
+  QtWorkspaceConfigMessage
 } from 'qt-lib';
 import { Project, ProjectManager } from 'qt-lib';
 import { convertAdditionalQtPaths, getConfiguration } from '@/util';
@@ -22,6 +23,7 @@ import {
   onQtInsRootUpdated,
   onAdditionalQtPathsUpdated
 } from '@/installation-root';
+import { coreAPI } from '@/extension';
 
 const logger = createLogger('project');
 
@@ -92,6 +94,21 @@ export class CoreProject implements Project {
     this._disposables.push(eventHandler);
   }
 
+  public initConfigValues() {
+    const folder = this.folder;
+    const message = new QtWorkspaceConfigMessage(folder);
+    message.config.set(
+      QtInsRootConfigName,
+      CoreProjectManager.getWorkspaceFolderQtInsRoot(folder)
+    );
+    message.config.set(
+      AdditionalQtPathsName,
+      CoreProjectManager.getWorkspaceFolderAdditionalQtPaths(folder)
+    );
+    logger.info('Updating coreAPI with message:', message as unknown as string);
+    coreAPI?.update(message);
+  }
+
   dispose() {
     logger.info('Disposing project:', this._folder.uri.fsPath);
     for (const d of this._disposables) {
@@ -110,6 +127,7 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
 
     this.onProjectAdded((project: CoreProject) => {
       logger.info('Adding project:', project.folder.uri.fsPath);
+      project.initConfigValues();
     });
   }
   private watchGlobalConfig() {

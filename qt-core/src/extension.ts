@@ -43,7 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
       const project = await createCoreProject(folder, context);
-      projectManager.addProject(project);
+      projectManager.addProject(project, true);
     }
   }
   context.subscriptions.push(...registerDocumentationCommands());
@@ -90,17 +90,6 @@ export function initCoreValues() {
   coreAPI?.update(globalUpdateMessage);
 
   for (const project of projectManager.getProjects()) {
-    const folder = project.folder;
-    const message = new QtWorkspaceConfigMessage(folder);
-    message.config.set(
-      QtInsRootConfigName,
-      CoreProjectManager.getWorkspaceFolderQtInsRoot(folder)
-    );
-    message.config.set(
-      AdditionalQtPathsName,
-      CoreProjectManager.getWorkspaceFolderAdditionalQtPaths(folder)
-    );
-    logger.info('Updating coreAPI with message:', message as unknown as string);
-    coreAPI?.update(message);
+    project.initConfigValues();
   }
 }
