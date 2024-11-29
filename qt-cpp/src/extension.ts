@@ -135,7 +135,7 @@ function processMessage(message: QtWorkspaceConfigMessage) {
   } else {
     project = projectManager.getProject(message.workspaceFolder);
     if (!project) {
-      logger.info('Project not found');
+      logger.error('Project not found');
       return;
     }
   }
