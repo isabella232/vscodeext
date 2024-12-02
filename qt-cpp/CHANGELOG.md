@@ -1,5 +1,30 @@
 # Change Log
 
+## 1.1.0 (Dec 4, 2024)
+
+🎉 **Added**
+
+- `QT_QML_GENERATE_QMLLS_INI` to generated kits
+- Progress bar for generating kits
+- Tilde support for configuration paths
+- Telemetry for collecting usage data
+- Generation of `qtpaths` kits
+- vcpkg support
+- Pop-up message to set `cmake.cmakePath` if it is not set
+- Launch variables:
+    1. `qt-cpp.QML_IMPORT_PATH`
+    1. `qt-cpp.QT_QPA_PLATFORM_PLUGIN_PATH`
+
+⚠️ **Changed**
+
+- Refactored and shortened MSVC kit names
+- Set `Ninja` as the default generator for CMake instead of `Ninja Multi-Config`
+
+🐞 **Fixed**
+
+- Removed `No CMake kit` selected popup on startup
+- Fixed generation of broken MSVC kits
+
 ## 1.0.0 (Sep 10, 2024)
 
 - 🎉 Our initial release 🎉
