@@ -42,18 +42,3 @@ export function checkForUncommittedChanges() {
     );
   }
 }
-
-export function checkForTagCommit(extension: string, version: string) {
-  const commitMessageTitle = execSync('git show -s --format=%s HEAD')
-    .toString()
-    .trim();
-
-  if (
-    !commitMessageTitle.startsWith(extension) ||
-    !commitMessageTitle.endsWith(version)
-  ) {
-    throw new Error(
-      `Please checkout to the release commit for ${extension} version ${version} before proceeding.`
-    );
-  }
-}

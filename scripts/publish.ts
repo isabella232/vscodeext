@@ -40,7 +40,6 @@ function main() {
       `Cannot publish stable version for odd minor version: ${version}`
     );
   }
-  common.checkForTagCommit(targetExtension, version);
 
   execSync(`npm run _prepublish`, { stdio: 'inherit' });
   execSync(`npm run ci:${targetExtension}`, { stdio: 'inherit' });

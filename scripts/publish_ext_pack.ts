@@ -29,8 +29,6 @@ function main() {
   const publishCommand = `npx vsce publish ${preRelease ? '--pre-release' : ''}`;
   const version = common.getExtensionVersion(targetExtensionPackRoot);
 
-  common.checkForTagCommit(targetExtensionPack, version);
-
   execSync(`npm run _prepublish_git`, { stdio: 'inherit' });
   execSync(`npm ci`, { stdio: 'inherit' });
   execSync(`npm run checkChangelog:${targetExtensionPack}`, {
