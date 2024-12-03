@@ -1,5 +1,23 @@
 # Change Log
 
+## 1.1.0 (Dec 4, 2024)
+
+🎉 **Added**
+
+- Tilde support for configuration paths
+- Telemetry for collecting usage data
+- Automatically downloading the latest QML Language Server binary
+- `Check for QML language server update` and `Download the most recent QML language server` commands
+- Configuration variables:
+    1. `qt-qml.qmlls.additionalImportPaths` for adding additional import paths
+    1. `qt-qml.doNotAskForQmllsDownload` for disabling the download prompt
+    1. `qt-qml.qmlls.useQmlImportPathEnvVar` for using the `QML_IMPORT_PATH` environment variable
+- Multi-root workspace support for QML Language Server
+
+⚠️ **Changed**
+
+- Improved `qml` static syntax highlighting
+
 ## 1.0.0 (Sep 10, 2024)
 
 - 🎉 Our initial release 🎉
