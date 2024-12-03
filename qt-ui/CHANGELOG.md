@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.0 (Dec 4, 2024)
+
+🎉 **Added**
+
+- Tilde support for configuration paths
+- Telemetry for collecting usage data
+- vcpkg support
+
 ## 1.0.0 (Sep 10, 2024)
 
 - 🎉 Our initial release 🎉
