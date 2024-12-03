@@ -22,3 +22,4 @@ extension_packs/**
 ../**/*
 .eslintcache
 tsconfig.tsbuildinfo
+tests/**

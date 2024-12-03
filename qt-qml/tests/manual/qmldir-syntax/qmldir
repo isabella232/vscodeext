@@ -1,0 +1,72 @@
+module MyModule
+
+# this is a comment
+Margins 1.0 Margins.qml
+Margins 10.1 ./Margins.qml
+Margins 10.1 ./my-qmls/Margins.qml
+Margins 10.1 ./my-qmls/+Fusion/Margins.qml
+singleton Margins 1.0 Margins.qml
+singleton Margins 10.1 ./Margins.qml
+singleton Margins 10.1 ./my-qmls/Margins.qml
+singleton Margins 10.1 ./my-qmls/+Fusion/Margins.qml
+internal MyPrivateType MyPrivateType.qml
+internal MyPrivateType ./MyPrivateType.qml
+
+JSArray 1.0 StackView.js
+StyleHelpers 1.0 style.js
+StyleHelpers 1.0 ./style.js
+StyleHelpers 1.0 ./my-js/style.js
+
+plugin qtquick2plugin
+plugin qtquick2plugin ../myplugins
+plugin qtquick2plugin ../my-plugins/+myplugins
+optional plugin qtquick2plugin
+optional plugin qtquick2plugin ../myplugins
+optional plugin qtquick2plugin ../my-plugins/+myplugins
+
+classname QtQuick2Plugin
+
+typeinfo plugins.qmltypes
+typeinfo ./plugins.qmltypes
+typeinfo ./my-qmltypes/plugins.qmltypes
+
+depends QtQuick 1.0
+depends QtQml.Models 1.0
+
+import QtQml
+import QtQml 1.0
+import QtQml auto
+
+designersupported
+
+prefer /home/test
+prefer :/qt-project.org/imports/Qt/labs/folderlistmodel/
+
+# below are undocumented
+linktarget Qt6::qmlfolderlistmodelplugin
+depends QtQuick
+depends QtQuick auto
+static
+system
+
+default import QtQuick.Controls.Basic auto
+optional import QtQuick.Controls.Fusion auto
+
+# directory listing case
+Margins Margins.qml
+Margins ./Margins.qml
+Margins ./my-qmls/Margins.qml
+Margins ./my-qmls/+Fusion/Margins.qml
+
+singleton Margins Margins.qml
+singleton Margins /Margins.qml
+singleton Margins ./my-qmls/Margins.qml
+singleton Margins ./my-qmls/+Fusion/Margins.qml
+
+internal MyPrivateType MyPrivateType.qml
+internal MyPrivateType ./MyPrivateType.qml
+
+JSArray StackView.js
+StyleHelpers style.js
+StyleHelpers ./style.js
+StyleHelpers ./my-js/style.js
