@@ -9,7 +9,6 @@ import {
   initLogger,
   QtInsRootConfigName,
   AdditionalQtPathsName,
-  QtWorkspaceConfigMessage,
   telemetry
 } from 'qt-lib';
 import { CoreAPIImpl } from '@/api';
@@ -43,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
       const project = await createCoreProject(folder, context);
-      projectManager.addProject(project, true);
+      projectManager.addProject(project);
     }
   }
   context.subscriptions.push(...registerDocumentationCommands());
@@ -78,16 +77,16 @@ export function deactivate() {
 }
 
 export function initCoreValues() {
-  const globalUpdateMessage = new QtWorkspaceConfigMessage(GlobalWorkspace);
-  globalUpdateMessage.config.set(
+  coreAPI?.setValue(
+    GlobalWorkspace,
     QtInsRootConfigName,
     getCurrentGlobalQtInstallationRoot()
   );
-  globalUpdateMessage.config.set(
+  coreAPI?.setValue(
+    GlobalWorkspace,
     AdditionalQtPathsName,
     getCurrentGlobalAdditionalQtPaths()
   );
-  coreAPI?.update(globalUpdateMessage);
 
   for (const project of projectManager.getProjects()) {
     project.initConfigValues();
