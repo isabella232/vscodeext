@@ -16,6 +16,7 @@
     "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata"
   },
   "devDependencies": {
+    "@types/async": "^3.2.24",
     "@types/node": "^20.17.0",
     "@types/vscode": "^1.94.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "@vscode/extension-telemetry": "^0.9.7",
+    "async": "^3.2.6",
     "module-alias": "^2.2.3",
     "typescript": "^5.6.3",
     "winston": "^3.15.0",

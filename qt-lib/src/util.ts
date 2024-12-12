@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
+import * as async from 'async';
 
 import { QtInfo } from './core-api';
 import { telemetry } from './telemetry';
@@ -225,3 +226,65 @@ export async function waitForQtCpp() {
     return qtcpp.activate();
   }
 }
+
+class FileWriter {
+  private readonly files = new Map<
+    string,
+    async.QueueObject<{
+      filename: string;
+      content: string;
+    }>
+  >();
+  private static generateQueue() {
+    const concurrency = 1; // Concurrency of 1 ensures FIFO execution
+    return async.queue(
+      (
+        task: { filename: string; content: string },
+        done?: (err?: Error) => void
+      ) => {
+        FileWriter.writeToFile(task.filename, task.content)
+          .then(() => {
+            if (done) {
+              done();
+            }
+          })
+          .catch((err: Error) => {
+            if (done) {
+              done(err);
+            }
+          });
+      },
+      concurrency
+    );
+  }
+
+  public async push(
+    filename: string,
+    content: string,
+    callback?: async.AsyncResultCallback<unknown>
+  ) {
+    if (!this.files.has(filename)) {
+      this.files.set(filename, FileWriter.generateQueue());
+    }
+    if (!this.files.get(filename)) {
+      if (callback) {
+        callback(new Error(`Failed to create queue for ${filename}`));
+      }
+    }
+    if (callback) {
+      this.files.get(filename)?.push({ filename, content }, callback);
+    } else {
+      await this.files.get(filename)?.push({ filename, content });
+    }
+  }
+
+  private static async writeToFile(filename: string, content: string) {
+    try {
+      await fs.writeFile(filename, content);
+    } catch (err) {
+      throw new Error(`Failed to write to ${filename}: ${err as string}`);
+    }
+  }
+}
+
+export const fileWriter = new FileWriter();

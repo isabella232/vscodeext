@@ -23,7 +23,8 @@ import {
   IsWindows,
   getVCPKGRoot,
   telemetry,
-  TelemetryEventProperties
+  TelemetryEventProperties,
+  fileWriter
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { CppProject } from '@/project';
@@ -467,7 +468,18 @@ export class KitManager {
     });
     newKits.push(...newGeneratedKits);
     if (newKits.length !== 0 || fsSync.existsSync(cmakeKitsFile)) {
-      await fs.writeFile(cmakeKitsFile, JSON.stringify(newKits, null, 2));
+      await fileWriter.push(
+        cmakeKitsFile,
+        JSON.stringify(newKits, null, 2),
+        (err: Error | null | undefined) => {
+          if (err) {
+            logger.error('Error writing to cmake-kits.json:', err.message);
+            throw err;
+          } else {
+            logger.info(`Successfully wrote to ${cmakeKitsFile}`);
+          }
+        }
+      );
     }
   }
 
@@ -694,7 +706,18 @@ export class KitManager {
     });
     newKits.push(...newGeneratedKits);
     if (newKits.length !== 0 || fsSync.existsSync(cmakeKitsFile)) {
-      await fs.writeFile(cmakeKitsFile, JSON.stringify(newKits, null, 2));
+      await fileWriter.push(
+        cmakeKitsFile,
+        JSON.stringify(newKits, null, 2),
+        (err: Error | null | undefined) => {
+          if (err) {
+            logger.error('Error writing to cmake-kits.json:', err.message);
+            throw err;
+          } else {
+            logger.info(`Successfully wrote to ${cmakeKitsFile}`);
+          }
+        }
+      );
     }
   }
 
