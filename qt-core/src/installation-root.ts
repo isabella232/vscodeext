@@ -196,6 +196,7 @@ export function onQtInsRootUpdated(
   const message = new QtWorkspaceConfigMessage(folder);
   coreAPI?.setValue(folder, QtInsRootConfigName, newQtInstallationRoot);
   message.config.add(QtInsRootConfigName);
+  logger.info(`Notifying coreAPI with message: ${message.toString()}`);
   coreAPI?.notify(message);
 }
 
@@ -219,5 +220,6 @@ export function onAdditionalQtPathsUpdated(
   const message = new QtWorkspaceConfigMessage(folder);
   coreAPI?.setValue(folder, AdditionalQtPathsName, newPaths);
   message.config.add(AdditionalQtPathsName);
+  logger.info(`Notifying coreAPI with message: ${message.toString()}`);
   coreAPI?.notify(message);
 }

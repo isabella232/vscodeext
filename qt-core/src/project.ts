@@ -106,6 +106,7 @@ export class CoreProject implements Project {
     logger.info(
       `Setting additional Qt paths for ${folder.uri.fsPath} to: ${additionalQtPaths.join(', ')}`
     );
+    logger.info('Config values initialized for:', folder.uri.fsPath);
   }
 
   dispose() {

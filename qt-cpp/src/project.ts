@@ -78,6 +78,9 @@ export class CppProject implements Project {
                 selectedQtPaths
               );
               message.config.add('selectedQtPaths');
+              logger.info(
+                `Notifying coreAPI with message: ${message.toString()}`
+              );
               coreAPI?.notify(message);
             }
           }
@@ -95,6 +98,9 @@ export class CppProject implements Project {
             const message = new QtWorkspaceConfigMessage(this.folder);
             coreAPI?.setValue(this.folder, 'buildDir', currentBuildDir);
             message.config.add('buildDir');
+            logger.info(
+              `Notifying coreAPI with message: ${message.toString()}`
+            );
             coreAPI?.notify(message);
           }
         }
@@ -109,7 +115,6 @@ export class CppProject implements Project {
     }
     const folder = this.folder;
     const kit = await getSelectedKit(folder, true);
-    const message = new QtWorkspaceConfigMessage(folder);
     const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
     logger.info(
       `Setting selected kit path for ${folder.uri.fsPath} to ${selectedKitPath}`
@@ -117,9 +122,18 @@ export class CppProject implements Project {
     coreAPI.setValue(folder, 'selectedKitPath', selectedKitPath);
     const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
     coreAPI.setValue(folder, 'selectedQtPaths', selectedQtPaths);
+    logger.info(
+      `Setting selected Qt paths for ${folder.uri.fsPath} to ${selectedQtPaths}`
+    );
     coreAPI.setValue(folder, 'workspaceType', QtWorkspaceType.CMakeExt);
+    logger.info(
+      `Setting workspace type for ${folder.uri.fsPath} to ${QtWorkspaceType.CMakeExt}`
+    );
     coreAPI.setValue(folder, 'buildDir', this.buildDir);
-    logger.info('Updating coreAPI with message:', message as unknown as string);
+    logger.info(
+      `Setting build directory for ${folder.uri.fsPath} to ${this.buildDir}`
+    );
+    logger.info('Config values initialized for:', folder.uri.fsPath);
   }
   public getStateManager() {
     return this._stateManager;

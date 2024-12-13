@@ -43,6 +43,16 @@ export class QtWorkspaceConfigMessage {
     this.workspaceFolder = folder ?? 'global';
     this.config = new Set() as MessageConfigs;
   }
+  toString(): string {
+    const configs = Array.from(this.config).join(', ');
+    let folder: vscode.WorkspaceFolder | string;
+    if (typeof this.workspaceFolder === 'string') {
+      folder = this.workspaceFolder;
+    } else {
+      folder = this.workspaceFolder.name;
+    }
+    return `[${folder}]: ${configs}`;
+  }
 }
 
 export enum QtWorkspaceType {
