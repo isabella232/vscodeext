@@ -305,20 +305,27 @@ export class KitManager {
     }
     return kits;
   }
-
-  private static *generateKitFromQtInfo(qtInfo: QtInfo, cmakeOnlyKits?: Kit[]) {
+  private static initKitWithCommonSettings() {
     const kit: Kit = {
       name: '',
       isTrusted: true,
+      preferredGenerator: {
+        name: CMakeDefaultGenerator
+      },
       cmakeSettings: {
-        QT_QML_GENERATE_QMLLS_INI: 'ON'
+        QT_QML_GENERATE_QMLLS_INI: 'ON',
+        CMAKE_CXX_FLAGS_DEBUG_INIT: '-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG',
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT:
+          '-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG'
       }
     };
+    return kit;
+  }
+
+  private static *generateKitFromQtInfo(qtInfo: QtInfo, cmakeOnlyKits?: Kit[]) {
+    const kit = KitManager.initKitWithCommonSettings();
     const version = qtInfo.get('QT_VERSION');
     kit.name = qtInfo.name ? qtInfo.name : generateDefaultQtPathsName(qtInfo);
-    kit.preferredGenerator = {
-      name: CMakeDefaultGenerator
-    };
     const libs = qtInfo.get('QT_INSTALL_LIBS');
     if (!libs) {
       return undefined;
@@ -534,19 +541,11 @@ export class KitManager {
       }
     }
     const kitName = qtPath.mangleQtInstallation(qtInsRoot, installation);
-    let newKit: Kit = {
-      name: kitName,
-      environmentVariables: {
-        VSCODE_QT_INSTALLATION: installation,
-        PATH: qtPathEnv
-      },
-      isTrusted: true,
-      preferredGenerator: {
-        name: CMakeDefaultGenerator
-      },
-      cmakeSettings: {
-        QT_QML_GENERATE_QMLLS_INI: 'ON'
-      }
+    let newKit = KitManager.initKitWithCommonSettings();
+    newKit.name = kitName;
+    newKit.environmentVariables = {
+      VSCODE_QT_INSTALLATION: installation,
+      PATH: qtPathEnv
     };
 
     const toolchainFilePath = await promiseCmakeQtToolchainPath;
@@ -578,9 +577,6 @@ export class KitManager {
         const mingwDirPath = await promiseMingwPath;
         logger.info(`Mingw dir path: ${mingwDirPath}`);
         if (mingwDirPath) {
-          if (newKit.environmentVariables == undefined) {
-            newKit.environmentVariables = {};
-          }
           newKit.environmentVariables.PATH = [
             newKit.environmentVariables.PATH,
             mingwDirPath
